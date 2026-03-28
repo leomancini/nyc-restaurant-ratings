@@ -1,6 +1,14 @@
 import React, { useState, useRef, useCallback, useEffect } from "react";
 import styled from "styled-components";
 
+const GRAY = "#aaa";
+
+const GRADE_COLORS = {
+  A: "#2563EB",
+  B: "#16A34A",
+  C: "#EA580C",
+};
+
 const GRADE_LABELS = {
   A: "A",
   B: "B",
@@ -132,19 +140,26 @@ function App() {
           <>
             <ReceiptHeader>
               <StoreName>NYC RESTAURANT RATINGS</StoreName>
-              <Divider>{DASHES}</Divider>
+              <Divider>{DOTS}</Divider>
               <HeaderDetail>DEPT OF HEALTH & MENTAL HYGIENE</HeaderDetail>
               <HeaderDetail>RESTAURANT INSPECTION RESULTS</HeaderDetail>
-              <Divider>{DASHES}</Divider>
+              <Divider>{DOTS}</Divider>
             </ReceiptHeader>
 
-            <SearchBox
-              type="text"
-              placeholder="SEARCH RESTAURANT NAME..."
-              value={query}
-              onChange={handleInput}
-              autoFocus
-            />
+            <SearchWrap>
+              <SearchBox
+                type="text"
+                placeholder="SEARCH..."
+                value={query}
+                onChange={handleInput}
+                autoFocus
+              />
+              {query && (
+                <ClearButton onClick={() => { setQuery(""); setResults(null); if (abortRef.current) abortRef.current.abort(); }}>
+                  CLEAR
+                </ClearButton>
+              )}
+            </SearchWrap>
 
             {loading && <Status>SEARCHING{dots(3)}</Status>}
 
@@ -160,7 +175,6 @@ function App() {
                         onClick={() => selectRestaurant(r.camis, r.name)}
                       >
                         <ResultLeft>
-                          <ItemNumber>{String(i + 1).padStart(2, "0")}</ItemNumber>
                           <ResultDetails>
                             <ItemName>{titleCase(r.name)}</ItemName>
                             <ItemAddress>
@@ -168,15 +182,15 @@ function App() {
                               {r.boro ? `, ${BORO_NAMES[r.boro] || r.boro}` : ""}
                               {r.zipcode ? ` ${r.zipcode}` : ""}
                             </ItemAddress>
+                            {r.score != null && (
+                              <ScoreXs>{r.score} POINTS</ScoreXs>
+                            )}
                           </ResultDetails>
                         </ResultLeft>
                         <ResultRight>
                           <GradeBox grade={r.grade}>
                             {r.grade || "-"}
                           </GradeBox>
-                          {r.score != null && (
-                            <ScoreText>{r.score}</ScoreText>
-                          )}
                         </ResultRight>
                       </ResultRow>
                       <ItemDivider />
@@ -188,11 +202,6 @@ function App() {
 
             {!results && !loading && (
               <EmptyState>
-                <EmptyText>
-                  TYPE A RESTAURANT NAME ABOVE
-                </EmptyText>
-                <EmptyText>TO LOOK UP HEALTH GRADES</EmptyText>
-                <Divider>{DASHES}</Divider>
                 <LegendSection>
                   <LegendTitle>GRADE SCALE</LegendTitle>
                   <LegendRow>
@@ -220,7 +229,7 @@ function App() {
         {selected && !detailLoading && (
           <Detail>
             <BackButton onClick={goBack}>&lt; BACK TO RESULTS</BackButton>
-            <Divider>{DASHES}</Divider>
+            <Divider>{DOTS}</Divider>
 
             <DetailName>{titleCase(selected.name)}</DetailName>
             <DetailLine>{selected.cuisine}</DetailLine>
@@ -235,13 +244,12 @@ function App() {
               <DetailLine>TEL: {formatPhone(selected.phone)}</DetailLine>
             )}
 
-            <Divider>{DASHES}</Divider>
+            <Divider>{DOTS}</Divider>
 
             {selected.grade && (
               <>
                 <GradeReceipt>
-                  <GradeReceiptLabel>CURRENT GRADE</GradeReceiptLabel>
-                  <GradeBig>{GRADE_LABELS[selected.grade] || selected.grade}</GradeBig>
+                  <GradeBig grade={selected.grade}>{GRADE_LABELS[selected.grade] || selected.grade}</GradeBig>
                   {selected.score != null && (
                     <GradeReceiptRow>
                       <span>INSPECTION SCORE</span>
@@ -257,7 +265,7 @@ function App() {
                     </GradeReceiptRow>
                   )}
                 </GradeReceipt>
-                <Divider>{DASHES}</Divider>
+                <Divider>{DOTS}</Divider>
               </>
             )}
 
@@ -269,7 +277,7 @@ function App() {
                 <InspectionHeader>
                   <span>{formatDateShort(insp.date)}</span>
                   <InspectionMeta>
-                    {insp.grade && <span>GRADE: {insp.grade}</span>}
+                    {insp.grade && <InspGrade grade={insp.grade}>GRADE: {insp.grade}</InspGrade>}
                     {insp.score != null && <span>SCR: {insp.score}</span>}
                   </InspectionMeta>
                 </InspectionHeader>
@@ -293,18 +301,16 @@ function App() {
               </InspectionBlock>
             ))}
 
-            <Divider>{DASHES}</Divider>
+            <Divider>{DOTS}</Divider>
           </Detail>
         )}
 
         {detailLoading && <Status>LOADING{dots(3)}</Status>}
-
         <Footer>
-          <Divider>{DASHES}</Divider>
-          <FooterText>DATA: NYC OPEN DATA / DOHMH</FooterText>
+          <Divider>{DOTS}</Divider>
+          <FooterText>DATA FROM NYC OPEN DATA</FooterText>
           <FooterText>{new Date().toLocaleDateString("en-US", { year: "numeric", month: "2-digit", day: "2-digit" })} {new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })}</FooterText>
           <FooterText>THANK YOU FOR DINING SAFELY</FooterText>
-          <Barcode>||| |||| || ||| | |||| ||| || ||||</Barcode>
         </Footer>
       </Paper>
     </Receipt>
@@ -313,6 +319,11 @@ function App() {
 
 function dots(n) {
   return ".".repeat(n);
+}
+
+function scoreToXs(score) {
+  if (score <= 0) return 0;
+  return Math.min(10, Math.ceil(score / 5));
 }
 
 function toSlug(str) {
@@ -369,6 +380,7 @@ const StoreName = styled.h1`
   font-size: 28px;
   font-weight: 400;
   letter-spacing: 0.5px;
+  line-height: 1.4;
   color: #111;
   margin: 0 0 10px;
 `;
@@ -382,12 +394,35 @@ const HeaderDetail = styled.div`
 
 const Divider = styled.div`
   text-align: center;
-  color: #bbb;
+  color: ${GRAY};
   font-size: 14px;
   margin: 14px 0;
   letter-spacing: 0.5px;
   overflow: hidden;
   white-space: nowrap;
+`;
+
+const SearchWrap = styled.div`
+  position: relative;
+  margin-bottom: 16px;
+`;
+
+const ClearButton = styled.button`
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #666;
+  font-size: 16px;
+  font-family: "Home Video", "Courier New", Courier, monospace;
+  cursor: pointer;
+  padding: 4px;
+
+  &:hover {
+    color: #fff;
+  }
 `;
 
 const SearchBox = styled.input`
@@ -410,7 +445,7 @@ const SearchBox = styled.input`
 
 const Status = styled.p`
   text-align: center;
-  color: #888;
+  color: ${GRAY};
   margin: 24px 0;
   font-size: 16px;
   letter-spacing: 0.5px;
@@ -418,7 +453,7 @@ const Status = styled.p`
 
 const ResultCount = styled.p`
   font-size: 16px;
-  color: #888;
+  color: ${GRAY};
   margin: 16px 0 6px;
   letter-spacing: 0.5px;
 `;
@@ -433,7 +468,7 @@ const ResultItem = styled.div``;
 const ResultRow = styled.div`
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: center;
   gap: 14px;
   padding: 12px 0;
   cursor: pointer;
@@ -452,7 +487,7 @@ const ResultLeft = styled.div`
 
 const ItemNumber = styled.span`
   font-size: 16px;
-  color: #aaa;
+  color: ${GRAY};
   flex-shrink: 0;
   padding-top: 2px;
 `;
@@ -460,49 +495,57 @@ const ItemNumber = styled.span`
 const ResultDetails = styled.div`
   flex: 1;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  justify-content: center;
 `;
 
 const ItemName = styled.div`
   font-size: 18px;
   color: #111;
-  line-height: 1.3;
 `;
 
 const ItemMeta = styled.div`
   font-size: 16px;
   color: #777;
-  margin-top: 3px;
+`;
+
+const ScoreXs = styled.div`
+  font-size: 15px;
+  color: ${GRAY};
 `;
 
 const ItemAddress = styled.div`
   font-size: 15px;
-  color: #999;
-  margin-top: 2px;
+  color: ${GRAY};
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 `;
 
 const ResultRight = styled.div`
   display: flex;
-  flex-direction: column;
-  align-items: center;
   flex-shrink: 0;
 `;
 
 const GradeBox = styled.div`
-  width: 44px;
-  height: 44px;
-  border: 2px solid #111;
+  width: 68px;
+  height: 68px;
+  border: 4px solid ${(p) => GRADE_COLORS[p.grade] || "#111"};
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 28px;
-  color: #111;
+  font-size: 40px;
+  color: ${(p) => GRADE_COLORS[p.grade] || "#111"};
+  flex-shrink: 0;
 `;
 
 const ScoreText = styled.div`
   font-size: 15px;
-  color: #888;
+  color: ${GRAY};
   margin-top: 4px;
   letter-spacing: 0.5px;
 `;
@@ -517,7 +560,7 @@ const EmptyState = styled.div`
 `;
 
 const EmptyText = styled.p`
-  color: #888;
+  color: ${GRAY};
   font-size: 16px;
   margin: 6px 0;
   letter-spacing: 0.5px;
@@ -547,15 +590,16 @@ const LegendRow = styled.div`
 
 const LegendDots = styled.span`
   flex: 1;
-  border-bottom: 1px dotted #ccc;
+  border-bottom: 2px dotted ${GRAY};
   margin: 0 8px;
+  align-self: baseline;
   position: relative;
-  top: -3px;
+  top: -4px;
 `;
 
 const LegendNote = styled.p`
   font-size: 16px;
-  color: #999;
+  color: ${GRAY};
   text-align: center;
   margin: 12px 0 0;
   letter-spacing: 0.5px;
@@ -606,16 +650,22 @@ const GradeReceipt = styled.div`
 
 const GradeReceiptLabel = styled.div`
   font-size: 16px;
-  color: #888;
+  color: ${GRAY};
   letter-spacing: 0.5px;
   margin-bottom: 6px;
 `;
 
 const GradeBig = styled.div`
   font-size: 80px;
-  color: #111;
+  color: ${(p) => GRADE_COLORS[p.grade] || "#111"};
   line-height: 1;
-  margin: 10px 0 16px;
+  margin: 10px auto 16px;
+  width: 120px;
+  height: 120px;
+  border: 6px solid ${(p) => GRADE_COLORS[p.grade] || "#111"};
+  display: flex;
+  align-items: center;
+  justify-content: center;
 `;
 
 const GradeReceiptRow = styled.div`
@@ -656,6 +706,10 @@ const InspectionMeta = styled.div`
   color: #666;
 `;
 
+const InspGrade = styled.span`
+  color: ${(p) => GRADE_COLORS[p.grade] || "#111"};
+`;
+
 const ViolationsList = styled.div`
   display: flex;
   flex-direction: column;
@@ -683,7 +737,7 @@ const ViolationText = styled.span`
 
 const NoViolations = styled.div`
   font-size: 16px;
-  color: #aaa;
+  color: ${GRAY};
   letter-spacing: 0.5px;
 `;
 
@@ -694,7 +748,7 @@ const Footer = styled.footer`
 
 const FooterText = styled.div`
   font-size: 15px;
-  color: #999;
+  color: ${GRAY};
   letter-spacing: 0.5px;
   line-height: 1.8;
 `;
