@@ -162,7 +162,7 @@ function App() {
               )}
             </SearchWrap>
 
-            {loading && <Status>SEARCHING{dots(3)}</Status>}
+            {loading && <ResultCount>SEARCHING{dots(3)}</ResultCount>}
 
             {results && !loading && (
               <>
@@ -473,7 +473,7 @@ const Status = styled.p`
 
 const ResultCount = styled.p`
   font-size: 16px;
-  color: ${GRAY};
+  color: #111;
   margin: 16px 0 6px;
   letter-spacing: 0.5px;
 `;
@@ -524,6 +524,9 @@ const ResultDetails = styled.div`
 const ItemName = styled.div`
   font-size: 18px;
   color: #111;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 `;
 
 const ItemMeta = styled.div`
