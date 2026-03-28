@@ -472,10 +472,10 @@ const Status = styled.p`
 `;
 
 const ResultCount = styled.p`
-  font-size: 16px;
+  font-size: 18px;
   color: #111;
-  margin: 16px 0 6px;
-  letter-spacing: 0.5px;
+  margin: 0;
+  padding: 12px 0;
 `;
 
 const ResultsList = styled.div`
