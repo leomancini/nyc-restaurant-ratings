@@ -19,7 +19,15 @@
   -webkit-tap-highlight-color: transparent;
 }
 
+html {
+  height: 100%;
+  overflow: hidden;
+}
+
 body {
+  height: 100%;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
   margin: 0;
   font-family: "Home Video", "Courier New", Courier, monospace;
   -webkit-font-smoothing: antialiased;
