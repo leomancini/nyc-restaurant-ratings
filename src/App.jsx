@@ -140,10 +140,8 @@ function App() {
           <>
             <ReceiptHeader>
               <StoreName>NYC RESTAURANT RATINGS</StoreName>
-              <Divider>{DOTS}</Divider>
               <HeaderDetail>DEPT OF HEALTH & MENTAL HYGIENE</HeaderDetail>
               <HeaderDetail>RESTAURANT INSPECTION RESULTS</HeaderDetail>
-              <Divider>{DOTS}</Divider>
             </ReceiptHeader>
 
             <SearchWrap>
@@ -373,7 +371,7 @@ const Paper = styled.div`
 
 const ReceiptHeader = styled.div`
   text-align: center;
-  margin-bottom: 16px;
+  margin-bottom: 24px;
 `;
 
 const StoreName = styled.h1`
