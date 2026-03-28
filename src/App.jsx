@@ -355,7 +355,7 @@ const SearchBox = styled.input`
   width: 100%;
   padding: 10px 0;
   font-size: 14px;
-  font-family: "Courier New", Courier, monospace;
+  font-family: "Home Video", "Courier New", Courier, monospace;
   border: none;
   border-bottom: 1px dashed #999;
   outline: none;
@@ -539,7 +539,7 @@ const BackButton = styled.button`
   border: none;
   color: #555;
   font-size: 11px;
-  font-family: "Courier New", Courier, monospace;
+  font-family: "Home Video", "Courier New", Courier, monospace;
   cursor: pointer;
   padding: 0;
   margin-bottom: 8px;

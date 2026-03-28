@@ -1,10 +1,26 @@
+@font-face {
+  font-family: "Home Video";
+  src: url("/fonts/HomeVideo-BLG6G.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Home Video";
+  src: url("/fonts/HomeVideoBold-R90Dv.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
 * {
   box-sizing: border-box;
 }
 
 body {
   margin: 0;
-  font-family: "Courier New", Courier, monospace;
+  font-family: "Home Video", "Courier New", Courier, monospace;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background: #fff;
