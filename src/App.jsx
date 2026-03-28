@@ -150,12 +150,9 @@ function App() {
 
             {results && !loading && (
               <>
-                <ResultCount>
-                  {results.length === 0
-                    ? "NO RESULTS FOUND"
-                    : `${results.length} ITEM${results.length !== 1 ? "S" : ""} FOUND`}
-                </ResultCount>
-                <Divider>{DOTS}</Divider>
+                {results.length === 0 && (
+                  <ResultCount>NO RESULTS FOUND</ResultCount>
+                )}
                 <ResultsList>
                   {results.map((r, i) => (
                     <ResultItem key={r.camis}>
@@ -166,9 +163,6 @@ function App() {
                           <ItemNumber>{String(i + 1).padStart(2, "0")}</ItemNumber>
                           <ResultDetails>
                             <ItemName>{titleCase(r.name)}</ItemName>
-                            <ItemMeta>
-                              {r.cuisine && <span>{r.cuisine}</span>}
-                            </ItemMeta>
                             <ItemAddress>
                               {r.building} {r.street}
                               {r.boro ? `, ${BORO_NAMES[r.boro] || r.boro}` : ""}
