@@ -398,24 +398,19 @@ const Divider = styled.div`
 
 const SearchBox = styled.input`
   width: 100%;
-  padding: 12px 0;
+  padding: 14px 16px;
   font-size: 18px;
   font-family: "Home Video", "Courier New", Courier, monospace;
   border: none;
-  border-bottom: 1px dashed #999;
   outline: none;
-  background: transparent;
-  color: #111;
+  background: #111;
+  color: #fff;
   letter-spacing: 0.5px;
   box-sizing: border-box;
   text-transform: uppercase;
 
   &::placeholder {
-    color: #aaa;
-  }
-
-  &:focus {
-    border-bottom-color: #111;
+    color: #666;
   }
 `;
 
