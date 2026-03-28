@@ -1,0 +1,10 @@
+{
+  "app_id": "nyc-restaurant-ratings",
+  "app_name": "NYC Restaurant Ratings",
+  "domain": "https://nyc-restaurant-ratings.leo.gd",
+  "host": "localhost",
+  "port": "3128",
+  "author": "leo",
+  "anthropic": false,
+  "created_on": "Sat Mar 28 02:21:54 PM EDT 2026"
+}
