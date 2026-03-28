@@ -368,12 +368,12 @@ const Paper = styled.div`
   width: 100%;
   max-width: 600px;
   margin: 0 auto;
-  padding: 32px 20px 60px;
+  padding: 24px 20px 32px;
 `;
 
 const ReceiptHeader = styled.div`
   text-align: center;
-  margin-bottom: 24px;
+  margin-bottom: 16px;
 `;
 
 const StoreName = styled.h1`
@@ -396,7 +396,7 @@ const Divider = styled.div`
   text-align: center;
   color: ${GRAY};
   font-size: 14px;
-  margin: 14px 0;
+  margin: 10px 0;
   letter-spacing: 0.5px;
   overflow: hidden;
   white-space: nowrap;
@@ -404,7 +404,7 @@ const Divider = styled.div`
 
 const SearchWrap = styled.div`
   position: relative;
-  margin-bottom: 16px;
+  margin-bottom: 8px;
 `;
 
 const ClearButton = styled.button`
@@ -556,7 +556,7 @@ const ItemDivider = styled.div`
 
 const EmptyState = styled.div`
   text-align: center;
-  margin: 32px 0 16px;
+  margin: 12px 0 8px;
 `;
 
 const EmptyText = styled.p`
@@ -743,7 +743,7 @@ const NoViolations = styled.div`
 
 const Footer = styled.footer`
   text-align: center;
-  margin-top: 24px;
+  margin-top: 12px;
 `;
 
 const FooterText = styled.div`
