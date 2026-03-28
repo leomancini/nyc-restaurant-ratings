@@ -311,55 +311,14 @@ function formatPhone(phone) {
 
 const Receipt = styled.div`
   min-height: 100vh;
-  background: #e8e4de;
-  display: flex;
-  justify-content: center;
-  padding: 24px 16px 60px;
+  background: #fff;
 `;
 
 const Paper = styled.div`
   width: 100%;
-  max-width: 440px;
-  background: #fefcf9;
-  padding: 32px 24px;
-  box-shadow:
-    0 1px 3px rgba(0, 0, 0, 0.08),
-    0 8px 24px rgba(0, 0, 0, 0.04);
-  position: relative;
-
-  &::before {
-    content: "";
-    position: absolute;
-    top: -12px;
-    left: 0;
-    right: 0;
-    height: 12px;
-    background: linear-gradient(
-      135deg,
-      #fefcf9 33.33%,
-      transparent 33.33%,
-      transparent 66.66%,
-      #fefcf9 66.66%
-    );
-    background-size: 12px 12px;
-  }
-
-  &::after {
-    content: "";
-    position: absolute;
-    bottom: -12px;
-    left: 0;
-    right: 0;
-    height: 12px;
-    background: linear-gradient(
-      -135deg,
-      #fefcf9 33.33%,
-      transparent 33.33%,
-      transparent 66.66%,
-      #fefcf9 66.66%
-    );
-    background-size: 12px 12px;
-  }
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 32px 20px 60px;
 `;
 
 const ReceiptHeader = styled.div`
