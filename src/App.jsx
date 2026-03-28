@@ -34,21 +34,33 @@ function App() {
   const [selected, setSelected] = useState(null);
   const [detailLoading, setDetailLoading] = useState(false);
   const timerRef = useRef(null);
+  const abortRef = useRef(null);
 
   const search = useCallback(async (q) => {
+    if (abortRef.current) abortRef.current.abort();
+
     if (q.trim().length < 2) {
       setResults(null);
+      setLoading(false);
       return;
     }
+
+    const controller = new AbortController();
+    abortRef.current = controller;
     setLoading(true);
+
     try {
-      const res = await fetch(`/api/search?q=${encodeURIComponent(q)}`);
+      const res = await fetch(`/api/search?q=${encodeURIComponent(q)}`, {
+        signal: controller.signal,
+      });
       const data = await res.json();
       setResults(data.restaurants);
-    } catch {
-      setResults([]);
-    } finally {
       setLoading(false);
+    } catch (e) {
+      if (e.name !== "AbortError") {
+        setResults([]);
+        setLoading(false);
+      }
     }
   }, []);
 
@@ -57,7 +69,13 @@ function App() {
     setQuery(val);
     setSelected(null);
     clearTimeout(timerRef.current);
-    timerRef.current = setTimeout(() => search(val), 300);
+    if (val.trim().length < 2) {
+      if (abortRef.current) abortRef.current.abort();
+      setResults(null);
+      setLoading(false);
+      return;
+    }
+    timerRef.current = setTimeout(() => search(val), 400);
   };
 
   const selectRestaurant = async (camis) => {
