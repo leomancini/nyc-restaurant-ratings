@@ -323,45 +323,45 @@ const Paper = styled.div`
 
 const ReceiptHeader = styled.div`
   text-align: center;
-  margin-bottom: 20px;
+  margin-bottom: 24px;
 `;
 
 const StoreName = styled.h1`
-  font-size: 20px;
-  font-weight: 700;
-  letter-spacing: 3px;
+  font-size: 28px;
+  font-weight: 400;
+  letter-spacing: 0.5px;
   color: #111;
-  margin: 0 0 8px;
+  margin: 0 0 10px;
 `;
 
 const HeaderDetail = styled.div`
-  font-size: 11px;
+  font-size: 14px;
   color: #555;
-  letter-spacing: 1px;
+  letter-spacing: 0.5px;
   line-height: 1.6;
 `;
 
 const Divider = styled.div`
   text-align: center;
   color: #bbb;
-  font-size: 11px;
-  margin: 12px 0;
-  letter-spacing: 1px;
+  font-size: 14px;
+  margin: 14px 0;
+  letter-spacing: 0.5px;
   overflow: hidden;
   white-space: nowrap;
 `;
 
 const SearchBox = styled.input`
   width: 100%;
-  padding: 10px 0;
-  font-size: 14px;
+  padding: 12px 0;
+  font-size: 18px;
   font-family: "Home Video", "Courier New", Courier, monospace;
   border: none;
   border-bottom: 1px dashed #999;
   outline: none;
   background: transparent;
   color: #111;
-  letter-spacing: 1px;
+  letter-spacing: 0.5px;
   box-sizing: border-box;
   text-transform: uppercase;
 
@@ -378,15 +378,15 @@ const Status = styled.p`
   text-align: center;
   color: #888;
   margin: 24px 0;
-  font-size: 12px;
-  letter-spacing: 2px;
+  font-size: 16px;
+  letter-spacing: 0.5px;
 `;
 
 const ResultCount = styled.p`
-  font-size: 11px;
+  font-size: 14px;
   color: #888;
-  margin: 14px 0 4px;
-  letter-spacing: 1px;
+  margin: 16px 0 6px;
+  letter-spacing: 0.5px;
 `;
 
 const ResultsList = styled.div`
@@ -400,8 +400,8 @@ const ResultRow = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  gap: 12px;
-  padding: 10px 0;
+  gap: 14px;
+  padding: 12px 0;
   cursor: pointer;
 
   &:hover {
@@ -411,13 +411,13 @@ const ResultRow = styled.div`
 
 const ResultLeft = styled.div`
   display: flex;
-  gap: 10px;
+  gap: 12px;
   flex: 1;
   min-width: 0;
 `;
 
 const ItemNumber = styled.span`
-  font-size: 11px;
+  font-size: 14px;
   color: #aaa;
   flex-shrink: 0;
   padding-top: 2px;
@@ -429,22 +429,21 @@ const ResultDetails = styled.div`
 `;
 
 const ItemName = styled.div`
-  font-size: 13px;
-  font-weight: 700;
+  font-size: 17px;
   color: #111;
   line-height: 1.3;
 `;
 
 const ItemMeta = styled.div`
-  font-size: 11px;
+  font-size: 14px;
   color: #777;
-  margin-top: 2px;
+  margin-top: 3px;
 `;
 
 const ItemAddress = styled.div`
-  font-size: 10px;
+  font-size: 13px;
   color: #999;
-  margin-top: 1px;
+  margin-top: 2px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 `;
@@ -457,21 +456,20 @@ const ResultRight = styled.div`
 `;
 
 const GradeBox = styled.div`
-  width: 36px;
-  height: 36px;
+  width: 44px;
+  height: 44px;
   border: 2px solid #111;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 22px;
-  font-weight: 900;
+  font-size: 28px;
   color: #111;
 `;
 
 const ScoreText = styled.div`
-  font-size: 10px;
+  font-size: 13px;
   color: #888;
-  margin-top: 3px;
+  margin-top: 4px;
   letter-spacing: 0.5px;
 `;
 
@@ -481,27 +479,26 @@ const ItemDivider = styled.div`
 
 const EmptyState = styled.div`
   text-align: center;
-  margin: 28px 0 12px;
+  margin: 32px 0 16px;
 `;
 
 const EmptyText = styled.p`
   color: #888;
-  font-size: 12px;
-  margin: 4px 0;
-  letter-spacing: 1px;
+  font-size: 16px;
+  margin: 6px 0;
+  letter-spacing: 0.5px;
 `;
 
 const LegendSection = styled.div`
-  margin-top: 16px;
+  margin-top: 20px;
   text-align: left;
 `;
 
 const LegendTitle = styled.div`
-  font-size: 11px;
-  font-weight: 700;
+  font-size: 15px;
   color: #555;
-  margin-bottom: 8px;
-  letter-spacing: 1px;
+  margin-bottom: 10px;
+  letter-spacing: 0.5px;
   text-align: center;
 `;
 
@@ -509,25 +506,25 @@ const LegendRow = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: baseline;
-  font-size: 12px;
+  font-size: 16px;
   color: #555;
-  line-height: 1.8;
+  line-height: 2;
 `;
 
 const LegendDots = styled.span`
   flex: 1;
   border-bottom: 1px dotted #ccc;
-  margin: 0 6px;
+  margin: 0 8px;
   position: relative;
   top: -3px;
 `;
 
 const LegendNote = styled.p`
-  font-size: 11px;
+  font-size: 14px;
   color: #999;
   text-align: center;
-  margin: 10px 0 0;
-  letter-spacing: 1px;
+  margin: 12px 0 0;
+  letter-spacing: 0.5px;
 `;
 
 // Detail view
@@ -538,12 +535,12 @@ const BackButton = styled.button`
   background: none;
   border: none;
   color: #555;
-  font-size: 11px;
+  font-size: 14px;
   font-family: "Home Video", "Courier New", Courier, monospace;
   cursor: pointer;
   padding: 0;
-  margin-bottom: 8px;
-  letter-spacing: 1px;
+  margin-bottom: 10px;
+  letter-spacing: 0.5px;
   text-transform: uppercase;
 
   &:hover {
@@ -552,15 +549,15 @@ const BackButton = styled.button`
 `;
 
 const DetailName = styled.h2`
-  font-size: 16px;
-  font-weight: 700;
+  font-size: 22px;
+  font-weight: 400;
   color: #111;
-  margin: 8px 0 4px;
+  margin: 10px 0 6px;
   text-align: center;
 `;
 
 const DetailLine = styled.div`
-  font-size: 11px;
+  font-size: 15px;
   color: #666;
   text-align: center;
   line-height: 1.6;
@@ -570,113 +567,109 @@ const DetailLine = styled.div`
 
 const GradeReceipt = styled.div`
   text-align: center;
-  padding: 12px 0;
+  padding: 14px 0;
 `;
 
 const GradeReceiptLabel = styled.div`
-  font-size: 11px;
+  font-size: 14px;
   color: #888;
-  letter-spacing: 2px;
-  margin-bottom: 4px;
+  letter-spacing: 0.5px;
+  margin-bottom: 6px;
 `;
 
 const GradeBig = styled.div`
-  font-size: 64px;
-  font-weight: 900;
+  font-size: 80px;
   color: #111;
   line-height: 1;
-  margin: 8px 0 12px;
+  margin: 10px 0 16px;
 `;
 
 const GradeReceiptRow = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: baseline;
-  font-size: 12px;
+  font-size: 16px;
   color: #555;
   line-height: 2;
 `;
 
 const SectionTitle = styled.h3`
-  font-size: 12px;
-  font-weight: 700;
+  font-size: 16px;
+  font-weight: 400;
   color: #555;
-  margin: 8px 0 4px;
-  letter-spacing: 1px;
+  margin: 10px 0 6px;
+  letter-spacing: 0.5px;
   text-align: center;
 `;
 
 const InspectionBlock = styled.div`
-  margin: 8px 0;
+  margin: 10px 0;
 `;
 
 const InspectionHeader = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: baseline;
-  font-size: 12px;
-  font-weight: 700;
+  font-size: 16px;
   color: #333;
-  margin-bottom: 6px;
+  margin-bottom: 8px;
 `;
 
 const InspectionMeta = styled.div`
   display: flex;
-  gap: 10px;
-  font-size: 11px;
-  font-weight: 400;
+  gap: 12px;
+  font-size: 14px;
   color: #666;
 `;
 
 const ViolationsList = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
 `;
 
 const ViolationItem = styled.div`
-  font-size: 11px;
+  font-size: 14px;
   color: #444;
   line-height: 1.5;
 `;
 
 const ViolationFlag = styled.span`
-  font-weight: 700;
   color: ${(p) => (p.critical ? "#111" : "#888")};
   ${(p) => p.critical && "text-decoration: underline;"}
 `;
 
 const ViolationText = styled.span`
   display: block;
-  padding-left: 12px;
+  padding-left: 14px;
   color: #555;
-  font-size: 10px;
+  font-size: 13px;
   line-height: 1.5;
 `;
 
 const NoViolations = styled.div`
-  font-size: 11px;
+  font-size: 14px;
   color: #aaa;
   letter-spacing: 0.5px;
 `;
 
 const Footer = styled.footer`
   text-align: center;
-  margin-top: 20px;
+  margin-top: 24px;
 `;
 
 const FooterText = styled.div`
-  font-size: 10px;
+  font-size: 13px;
   color: #999;
-  letter-spacing: 1px;
+  letter-spacing: 0.5px;
   line-height: 1.8;
 `;
 
 const Barcode = styled.div`
-  font-size: 20px;
-  letter-spacing: 2px;
+  font-size: 24px;
+  letter-spacing: 0.5px;
   color: #111;
-  margin-top: 12px;
+  margin-top: 14px;
   line-height: 1;
 `;
 
