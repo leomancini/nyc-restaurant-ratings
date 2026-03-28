@@ -15,7 +15,7 @@ const APP_TOKEN = process.env.NYC_OPEN_DATA_TOKEN || "";
 app.use(express.json());
 app.use(express.static(join(__dirname, "dist")));
 
-// Search restaurants by name
+// Search restaurants by name and/or address
 app.get("/api/search", async (req, res) => {
   try {
     const { q } = req.query;
@@ -23,10 +23,24 @@ app.get("/api/search", async (req, res) => {
       return res.json({ restaurants: [] });
     }
 
-    const searchTerm = q.trim().toUpperCase().replace(/'/g, "''");
+    const raw = q.trim().toUpperCase().replace(/'/g, "''");
+    const words = raw.split(/\s+/).filter((w) => w.length > 0);
+    const joined = words.join("");
+
+    // Each word must appear in name OR address fields
+    const wordClauses = words.map(
+      (w) =>
+        `(upper(dba) like '%${w}%' OR upper(street) like '%${w}%' OR upper(boro) like '%${w}%' OR zipcode like '%${w}%')`
+    );
+
+    // Also match the no-spaces version against the name (sweet green -> sweetgreen)
+    const fuzzyClause =
+      words.length > 1 ? ` OR upper(dba) like '%${joined}%'` : "";
+
+    const where = `(${wordClauses.join(" AND ")}${fuzzyClause})`;
 
     const params = new URLSearchParams({
-      $where: `upper(dba) like '%${searchTerm}%'`,
+      $where: where,
       $order: "inspection_date DESC",
       $limit: "1000",
     });
