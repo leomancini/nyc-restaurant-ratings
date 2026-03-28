@@ -37,6 +37,7 @@ function App() {
   const [detailLoading, setDetailLoading] = useState(false);
   const timerRef = useRef(null);
   const abortRef = useRef(null);
+  const hasSelected = useRef(false);
 
   const search = useCallback(async (q) => {
     if (abortRef.current) abortRef.current.abort();
@@ -96,6 +97,7 @@ function App() {
   };
 
   const goBack = () => {
+    hasSelected.current = true;
     setSelected(null);
     window.history.pushState(null, "", "/");
   };
@@ -150,7 +152,7 @@ function App() {
                 placeholder="SEARCH..."
                 value={query}
                 onChange={handleInput}
-                autoFocus
+                autoFocus={!hasSelected.current}
                 onTouchStart={preventIosKeyboardScroll}
               />
               {query && (
