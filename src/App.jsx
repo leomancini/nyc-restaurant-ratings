@@ -358,7 +358,6 @@ function formatPhone(phone) {
 // Styled Components
 
 const Receipt = styled.div`
-  min-height: 100vh;
   background: #fff;
 `;
 
