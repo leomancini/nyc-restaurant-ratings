@@ -175,7 +175,7 @@ function App() {
                             {r.grade || "-"}
                           </GradeBox>
                           {r.score != null && (
-                            <ScoreText>SCR:{r.score}</ScoreText>
+                            <ScoreText>{r.score}</ScoreText>
                           )}
                         </ResultRight>
                       </ResultRow>
