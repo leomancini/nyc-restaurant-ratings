@@ -19,6 +19,12 @@
   -webkit-tap-highlight-color: transparent;
 }
 
+.prevent-ios-focus-scrolling {
+  position: fixed;
+  left: 0;
+  right: 0;
+}
+
 body {
   margin: 0;
   font-family: "Home Video", "Courier New", Courier, monospace;

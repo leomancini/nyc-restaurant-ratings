@@ -151,11 +151,7 @@ function App() {
                 value={query}
                 onChange={handleInput}
                 autoFocus
-                onFocus={() => {
-                  setTimeout(() => window.scrollTo(0, 0), 50);
-                  setTimeout(() => window.scrollTo(0, 0), 150);
-                  setTimeout(() => window.scrollTo(0, 0), 300);
-                }}
+                onTouchStart={preventIosKeyboardScroll}
               />
               {query && (
                 <ClearButton onClick={() => { setQuery(""); setResults(null); if (abortRef.current) abortRef.current.abort(); }}>
@@ -322,6 +318,27 @@ function App() {
 
 function dots(n) {
   return ".".repeat(n);
+}
+
+const MAX_KEYBOARD_PROPORTION = 0.52;
+
+function preventIosKeyboardScroll(e) {
+  if (!/iPad|iPhone|iPod/.test(navigator.userAgent)) return;
+  if (
+    (e.target.offsetTop + e.target.offsetHeight) / window.innerHeight >
+    MAX_KEYBOARD_PROPORTION
+  )
+    return;
+
+  const offset = document.body.scrollTop;
+  document.body.style.top = offset * -1 + "px";
+  document.body.classList.add("prevent-ios-focus-scrolling");
+
+  setTimeout(() => {
+    const savedOffset = parseInt(document.body.style.top, 10);
+    document.body.classList.remove("prevent-ios-focus-scrolling");
+    document.body.scrollTop = savedOffset * -1;
+  }, 500);
 }
 
 function scoreToXs(score) {
