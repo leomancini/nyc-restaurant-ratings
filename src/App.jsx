@@ -365,7 +365,7 @@ const Paper = styled.div`
   width: 100%;
   max-width: 600px;
   margin: 0 auto;
-  padding: 24px 20px 32px;
+  padding: 16px 20px 32px;
 `;
 
 const ReceiptHeader = styled.div`
