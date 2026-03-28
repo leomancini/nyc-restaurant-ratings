@@ -162,12 +162,14 @@ function App() {
               )}
             </SearchWrap>
 
-            {loading && <ResultCount>SEARCHING{dots(3)}</ResultCount>}
+            {loading && (
+              <ResultsList><ResultItem><ResultRow as="div" style={{cursor: "default"}}><ResultLeft><ResultDetails><ItemName>SEARCHING{dots(3)}</ItemName></ResultDetails></ResultLeft></ResultRow></ResultItem></ResultsList>
+            )}
 
             {results && !loading && (
               <>
                 {results.length === 0 && (
-                  <ResultCount>NO RESULTS FOUND</ResultCount>
+                  <ResultItem><ResultRow as="div" style={{cursor: "default"}}><ResultLeft><ResultDetails><ItemName>NO RESULTS FOUND</ItemName></ResultDetails></ResultLeft></ResultRow></ResultItem>
                 )}
                 <ResultsList>
                   {results.map((r, i) => (
