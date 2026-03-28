@@ -1,31 +1,25 @@
 import React, { useState, useRef, useCallback } from "react";
 import styled from "styled-components";
 
-const GRADE_COLORS = {
-  A: "#2E7D32",
-  B: "#F57F17",
-  C: "#E65100",
-  Z: "#9E9E9E",
-  P: "#5C6BC0",
-  N: "#78909C",
-};
-
 const GRADE_LABELS = {
   A: "A",
   B: "B",
   C: "C",
-  Z: "Grade Pending",
-  P: "Grade Pending",
-  N: "Not Yet Graded",
+  Z: "PENDING",
+  P: "PENDING",
+  N: "N/A",
 };
 
 const BORO_NAMES = {
-  Manhattan: "Manhattan",
-  Bronx: "Bronx",
-  Brooklyn: "Brooklyn",
-  Queens: "Queens",
-  "Staten Island": "Staten Island",
+  Manhattan: "MANHATTAN",
+  Bronx: "BRONX",
+  Brooklyn: "BROOKLYN",
+  Queens: "QUEENS",
+  "Staten Island": "STATEN ISLAND",
 };
+
+const DASHES = "- - - - - - - - - - - - - - - - - -";
+const DOTS = ". . . . . . . . . . . . . . . . . .";
 
 function App() {
   const [query, setQuery] = useState("");
@@ -94,176 +88,199 @@ function App() {
   const goBack = () => setSelected(null);
 
   return (
-    <Container>
-      <Header>
-        <Title>NYC Restaurant Ratings</Title>
-        <Subtitle>
-          Health inspection grades from the NYC Department of Health
-        </Subtitle>
-      </Header>
+    <Receipt>
+      <Paper>
+        <ReceiptHeader>
+          <StoreName>NYC RESTAURANT RATINGS</StoreName>
+          <Divider>{DASHES}</Divider>
+          <HeaderDetail>DEPT OF HEALTH & MENTAL HYGIENE</HeaderDetail>
+          <HeaderDetail>RESTAURANT INSPECTION RESULTS</HeaderDetail>
+          <Divider>{DASHES}</Divider>
+        </ReceiptHeader>
 
-      {!selected && (
-        <>
-          <SearchBox
-            type="text"
-            placeholder="Search for a restaurant..."
-            value={query}
-            onChange={handleInput}
-            autoFocus
-          />
+        {!selected && (
+          <>
+            <SearchBox
+              type="text"
+              placeholder="SEARCH RESTAURANT NAME..."
+              value={query}
+              onChange={handleInput}
+              autoFocus
+            />
 
-          {loading && <Status>Searching...</Status>}
+            {loading && <Status>SEARCHING{dots(3)}</Status>}
 
-          {results && !loading && (
-            <>
-              <ResultCount>
-                {results.length === 0
-                  ? "No restaurants found"
-                  : `${results.length} restaurant${results.length !== 1 ? "s" : ""} found`}
-              </ResultCount>
-              <ResultsList>
-                {results.map((r) => (
-                  <ResultCard
-                    key={r.camis}
-                    onClick={() => selectRestaurant(r.camis)}
-                  >
-                    <GradeBadge color={GRADE_COLORS[r.grade] || "#BDBDBD"}>
-                      {r.grade || "–"}
-                    </GradeBadge>
-                    <ResultInfo>
-                      <RestaurantName>{titleCase(r.name)}</RestaurantName>
-                      <RestaurantMeta>
-                        {r.cuisine && <span>{r.cuisine}</span>}
-                        {r.boro && <span>{BORO_NAMES[r.boro] || r.boro}</span>}
-                      </RestaurantMeta>
-                      <RestaurantAddress>
-                        {r.building} {r.street}
-                        {r.zipcode ? `, ${r.zipcode}` : ""}
-                      </RestaurantAddress>
-                    </ResultInfo>
-                    {r.score != null && (
-                      <ScorePill score={r.score}>
-                        Score: {r.score}
-                      </ScorePill>
-                    )}
-                  </ResultCard>
-                ))}
-              </ResultsList>
-            </>
-          )}
-
-          {!results && !loading && (
-            <EmptyState>
-              <EmptyIcon>🔍</EmptyIcon>
-              <EmptyText>
-                Search by restaurant name to see their health inspection grade
-              </EmptyText>
-              <GradeLegend>
-                <LegendTitle>Grade Scale</LegendTitle>
-                <LegendItems>
-                  <LegendItem>
-                    <LegendBadge color={GRADE_COLORS.A}>A</LegendBadge>
-                    <span>Score 0–13</span>
-                  </LegendItem>
-                  <LegendItem>
-                    <LegendBadge color={GRADE_COLORS.B}>B</LegendBadge>
-                    <span>Score 14–27</span>
-                  </LegendItem>
-                  <LegendItem>
-                    <LegendBadge color={GRADE_COLORS.C}>C</LegendBadge>
-                    <span>Score 28+</span>
-                  </LegendItem>
-                </LegendItems>
-                <LegendNote>Lower score = fewer violations = better</LegendNote>
-              </GradeLegend>
-            </EmptyState>
-          )}
-        </>
-      )}
-
-      {selected && !detailLoading && (
-        <Detail>
-          <BackButton onClick={goBack}>← Back to results</BackButton>
-          <DetailHeader>
-            <DetailGradeBadge
-              color={GRADE_COLORS[selected.grade] || "#BDBDBD"}
-            >
-              {selected.grade || "–"}
-            </DetailGradeBadge>
-            <DetailHeaderInfo>
-              <DetailName>{titleCase(selected.name)}</DetailName>
-              <DetailCuisine>{selected.cuisine}</DetailCuisine>
-              <DetailAddress>
-                {selected.building} {selected.street},{" "}
-                {BORO_NAMES[selected.boro] || selected.boro}{" "}
-                {selected.zipcode}
-              </DetailAddress>
-              {selected.phone && (
-                <DetailPhone>{formatPhone(selected.phone)}</DetailPhone>
-              )}
-            </DetailHeaderInfo>
-          </DetailHeader>
-
-          {selected.grade && (
-            <GradeSection>
-              <GradeLabel>Current Grade</GradeLabel>
-              <GradeDisplay>
-                <GradeLetter color={GRADE_COLORS[selected.grade]}>
-                  {GRADE_LABELS[selected.grade] || selected.grade}
-                </GradeLetter>
-                {selected.score != null && (
-                  <GradeScore>Inspection score: {selected.score}</GradeScore>
-                )}
-                {selected.gradeDate && (
-                  <GradeDate>
-                    Graded on {formatDate(selected.gradeDate)}
-                  </GradeDate>
-                )}
-              </GradeDisplay>
-            </GradeSection>
-          )}
-
-          <InspectionsSection>
-            <SectionTitle>Inspection History</SectionTitle>
-            {selected.inspections.map((insp, i) => (
-              <InspectionCard key={i}>
-                <InspectionHeader>
-                  <InspectionDate>{formatDate(insp.date)}</InspectionDate>
-                  <InspectionMeta>
-                    {insp.grade && (
-                      <InspectionGrade
-                        color={GRADE_COLORS[insp.grade] || "#BDBDBD"}
+            {results && !loading && (
+              <>
+                <ResultCount>
+                  {results.length === 0
+                    ? "NO RESULTS FOUND"
+                    : `${results.length} ITEM${results.length !== 1 ? "S" : ""} FOUND`}
+                </ResultCount>
+                <Divider>{DOTS}</Divider>
+                <ResultsList>
+                  {results.map((r, i) => (
+                    <ResultItem key={r.camis}>
+                      <ResultRow
+                        onClick={() => selectRestaurant(r.camis)}
                       >
-                        {insp.grade}
-                      </InspectionGrade>
-                    )}
-                    {insp.score != null && <span>Score: {insp.score}</span>}
+                        <ResultLeft>
+                          <ItemNumber>{String(i + 1).padStart(2, "0")}</ItemNumber>
+                          <ResultDetails>
+                            <ItemName>{titleCase(r.name)}</ItemName>
+                            <ItemMeta>
+                              {r.cuisine && <span>{r.cuisine}</span>}
+                            </ItemMeta>
+                            <ItemAddress>
+                              {r.building} {r.street}
+                              {r.boro ? `, ${BORO_NAMES[r.boro] || r.boro}` : ""}
+                              {r.zipcode ? ` ${r.zipcode}` : ""}
+                            </ItemAddress>
+                          </ResultDetails>
+                        </ResultLeft>
+                        <ResultRight>
+                          <GradeBox grade={r.grade}>
+                            {r.grade || "-"}
+                          </GradeBox>
+                          {r.score != null && (
+                            <ScoreText>SCR:{r.score}</ScoreText>
+                          )}
+                        </ResultRight>
+                      </ResultRow>
+                      <ItemDivider />
+                    </ResultItem>
+                  ))}
+                </ResultsList>
+              </>
+            )}
+
+            {!results && !loading && (
+              <EmptyState>
+                <EmptyText>
+                  TYPE A RESTAURANT NAME ABOVE
+                </EmptyText>
+                <EmptyText>TO LOOK UP HEALTH GRADES</EmptyText>
+                <Divider>{DASHES}</Divider>
+                <LegendSection>
+                  <LegendTitle>GRADE SCALE</LegendTitle>
+                  <LegendRow>
+                    <span>[A]</span>
+                    <LegendDots />
+                    <span>SCORE 0-13</span>
+                  </LegendRow>
+                  <LegendRow>
+                    <span>[B]</span>
+                    <LegendDots />
+                    <span>SCORE 14-27</span>
+                  </LegendRow>
+                  <LegendRow>
+                    <span>[C]</span>
+                    <LegendDots />
+                    <span>SCORE 28+</span>
+                  </LegendRow>
+                  <LegendNote>* LOWER SCORE = BETTER *</LegendNote>
+                </LegendSection>
+              </EmptyState>
+            )}
+          </>
+        )}
+
+        {selected && !detailLoading && (
+          <Detail>
+            <BackButton onClick={goBack}>&lt; BACK TO RESULTS</BackButton>
+            <Divider>{DASHES}</Divider>
+
+            <DetailName>{titleCase(selected.name)}</DetailName>
+            <DetailLine>{selected.cuisine}</DetailLine>
+            <DetailLine>
+              {selected.building} {selected.street}
+            </DetailLine>
+            <DetailLine>
+              {BORO_NAMES[selected.boro] || selected.boro}{" "}
+              {selected.zipcode}
+            </DetailLine>
+            {selected.phone && (
+              <DetailLine>TEL: {formatPhone(selected.phone)}</DetailLine>
+            )}
+
+            <Divider>{DASHES}</Divider>
+
+            {selected.grade && (
+              <>
+                <GradeReceipt>
+                  <GradeReceiptLabel>CURRENT GRADE</GradeReceiptLabel>
+                  <GradeBig>{GRADE_LABELS[selected.grade] || selected.grade}</GradeBig>
+                  {selected.score != null && (
+                    <GradeReceiptRow>
+                      <span>INSPECTION SCORE</span>
+                      <LegendDots />
+                      <span>{selected.score}</span>
+                    </GradeReceiptRow>
+                  )}
+                  {selected.gradeDate && (
+                    <GradeReceiptRow>
+                      <span>GRADE DATE</span>
+                      <LegendDots />
+                      <span>{formatDateShort(selected.gradeDate)}</span>
+                    </GradeReceiptRow>
+                  )}
+                </GradeReceipt>
+                <Divider>{DASHES}</Divider>
+              </>
+            )}
+
+            <SectionTitle>INSPECTION HISTORY</SectionTitle>
+            <Divider>{DOTS}</Divider>
+
+            {selected.inspections.map((insp, i) => (
+              <InspectionBlock key={i}>
+                <InspectionHeader>
+                  <span>{formatDateShort(insp.date)}</span>
+                  <InspectionMeta>
+                    {insp.grade && <span>GRADE: {insp.grade}</span>}
+                    {insp.score != null && <span>SCR: {insp.score}</span>}
                   </InspectionMeta>
                 </InspectionHeader>
-                {insp.violations.length > 0 && (
+                {insp.violations.length > 0 ? (
                   <ViolationsList>
                     {insp.violations.map((v, j) => (
-                      <Violation key={j} critical={v.critical}>
+                      <ViolationItem key={j}>
                         <ViolationFlag critical={v.critical}>
-                          {v.critical ? "Critical" : "General"}
+                          {v.critical ? "!! CRITICAL" : "   GENERAL "}
                         </ViolationFlag>
                         <ViolationText>{v.description}</ViolationText>
-                      </Violation>
+                      </ViolationItem>
                     ))}
                   </ViolationsList>
+                ) : (
+                  <NoViolations>NO VIOLATIONS RECORDED</NoViolations>
                 )}
-                {insp.violations.length === 0 && (
-                  <NoViolations>No violations recorded</NoViolations>
+                {i < selected.inspections.length - 1 && (
+                  <Divider>{DOTS}</Divider>
                 )}
-              </InspectionCard>
+              </InspectionBlock>
             ))}
-          </InspectionsSection>
-        </Detail>
-      )}
 
-      {detailLoading && <Status>Loading restaurant details...</Status>}
-    </Container>
+            <Divider>{DASHES}</Divider>
+          </Detail>
+        )}
+
+        {detailLoading && <Status>LOADING{dots(3)}</Status>}
+
+        <Footer>
+          <Divider>{DASHES}</Divider>
+          <FooterText>DATA: NYC OPEN DATA / DOHMH</FooterText>
+          <FooterText>{new Date().toLocaleDateString("en-US", { year: "numeric", month: "2-digit", day: "2-digit" })} {new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })}</FooterText>
+          <FooterText>THANK YOU FOR DINING SAFELY</FooterText>
+          <Barcode>||| |||| || ||| | |||| ||| || ||||</Barcode>
+        </Footer>
+      </Paper>
+    </Receipt>
   );
+}
+
+function dots(n) {
+  return ".".repeat(n);
 }
 
 function titleCase(str) {
@@ -273,12 +290,12 @@ function titleCase(str) {
     .replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
-function formatDate(dateStr) {
+function formatDateShort(dateStr) {
   const d = new Date(dateStr + "T00:00:00");
   return d.toLocaleDateString("en-US", {
     year: "numeric",
-    month: "long",
-    day: "numeric",
+    month: "2-digit",
+    day: "2-digit",
   });
 }
 
@@ -292,205 +309,266 @@ function formatPhone(phone) {
 
 // Styled Components
 
-const Container = styled.div`
-  max-width: 700px;
-  margin: 0 auto;
-  padding: 24px 16px 80px;
+const Receipt = styled.div`
+  min-height: 100vh;
+  background: #e8e4de;
+  display: flex;
+  justify-content: center;
+  padding: 24px 16px 60px;
 `;
 
-const Header = styled.header`
+const Paper = styled.div`
+  width: 100%;
+  max-width: 440px;
+  background: #fefcf9;
+  padding: 32px 24px;
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.08),
+    0 8px 24px rgba(0, 0, 0, 0.04);
+  position: relative;
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: -12px;
+    left: 0;
+    right: 0;
+    height: 12px;
+    background: linear-gradient(
+      135deg,
+      #fefcf9 33.33%,
+      transparent 33.33%,
+      transparent 66.66%,
+      #fefcf9 66.66%
+    );
+    background-size: 12px 12px;
+  }
+
+  &::after {
+    content: "";
+    position: absolute;
+    bottom: -12px;
+    left: 0;
+    right: 0;
+    height: 12px;
+    background: linear-gradient(
+      -135deg,
+      #fefcf9 33.33%,
+      transparent 33.33%,
+      transparent 66.66%,
+      #fefcf9 66.66%
+    );
+    background-size: 12px 12px;
+  }
+`;
+
+const ReceiptHeader = styled.div`
   text-align: center;
-  margin-bottom: 32px;
+  margin-bottom: 20px;
 `;
 
-const Title = styled.h1`
-  font-size: 28px;
+const StoreName = styled.h1`
+  font-size: 20px;
   font-weight: 700;
-  color: #1a1a1a;
-  margin: 0 0 6px;
+  letter-spacing: 3px;
+  color: #111;
+  margin: 0 0 8px;
 `;
 
-const Subtitle = styled.p`
-  font-size: 14px;
-  color: #666;
-  margin: 0;
+const HeaderDetail = styled.div`
+  font-size: 11px;
+  color: #555;
+  letter-spacing: 1px;
+  line-height: 1.6;
+`;
+
+const Divider = styled.div`
+  text-align: center;
+  color: #bbb;
+  font-size: 11px;
+  margin: 12px 0;
+  letter-spacing: 1px;
+  overflow: hidden;
+  white-space: nowrap;
 `;
 
 const SearchBox = styled.input`
   width: 100%;
-  padding: 14px 18px;
-  font-size: 17px;
-  border: 2px solid #e0e0e0;
-  border-radius: 12px;
+  padding: 10px 0;
+  font-size: 14px;
+  font-family: "Courier New", Courier, monospace;
+  border: none;
+  border-bottom: 1px dashed #999;
   outline: none;
-  transition: border-color 0.2s;
+  background: transparent;
+  color: #111;
+  letter-spacing: 1px;
   box-sizing: border-box;
-  background: #fafafa;
+  text-transform: uppercase;
+
+  &::placeholder {
+    color: #aaa;
+  }
 
   &:focus {
-    border-color: #1976d2;
-    background: #fff;
+    border-bottom-color: #111;
   }
 `;
 
 const Status = styled.p`
   text-align: center;
   color: #888;
-  margin-top: 32px;
-  font-size: 15px;
+  margin: 24px 0;
+  font-size: 12px;
+  letter-spacing: 2px;
 `;
 
 const ResultCount = styled.p`
-  font-size: 13px;
+  font-size: 11px;
   color: #888;
-  margin: 16px 0 8px;
+  margin: 14px 0 4px;
+  letter-spacing: 1px;
 `;
 
 const ResultsList = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 8px;
 `;
 
-const ResultCard = styled.div`
+const ResultItem = styled.div``;
+
+const ResultRow = styled.div`
   display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 14px;
-  border-radius: 12px;
-  border: 1px solid #eee;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 10px 0;
   cursor: pointer;
-  transition: background 0.15s, box-shadow 0.15s;
 
   &:hover {
-    background: #f5f8ff;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    background: rgba(0, 0, 0, 0.02);
   }
 `;
 
-const GradeBadge = styled.div`
-  width: 48px;
-  height: 48px;
-  border-radius: 10px;
+const ResultLeft = styled.div`
   display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 24px;
-  font-weight: 800;
-  color: #fff;
-  background: ${(p) => p.color};
-  flex-shrink: 0;
-`;
-
-const ResultInfo = styled.div`
+  gap: 10px;
   flex: 1;
   min-width: 0;
 `;
 
-const RestaurantName = styled.div`
-  font-size: 16px;
-  font-weight: 600;
-  color: #1a1a1a;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-`;
-
-const RestaurantMeta = styled.div`
-  font-size: 13px;
-  color: #666;
-  margin-top: 2px;
-  display: flex;
-  gap: 8px;
-
-  span + span::before {
-    content: "·";
-    margin-right: 8px;
-  }
-`;
-
-const RestaurantAddress = styled.div`
-  font-size: 12px;
-  color: #999;
-  margin-top: 2px;
-`;
-
-const ScorePill = styled.div`
-  font-size: 12px;
-  font-weight: 600;
-  padding: 4px 10px;
-  border-radius: 20px;
-  white-space: nowrap;
+const ItemNumber = styled.span`
+  font-size: 11px;
+  color: #aaa;
   flex-shrink: 0;
-  background: ${(p) =>
-    p.score <= 13 ? "#E8F5E9" : p.score <= 27 ? "#FFF8E1" : "#FBE9E7"};
-  color: ${(p) =>
-    p.score <= 13 ? "#2E7D32" : p.score <= 27 ? "#F57F17" : "#E65100"};
+  padding-top: 2px;
 `;
 
-const EmptyState = styled.div`
-  text-align: center;
-  margin-top: 60px;
+const ResultDetails = styled.div`
+  flex: 1;
+  min-width: 0;
 `;
 
-const EmptyIcon = styled.div`
-  font-size: 48px;
-  margin-bottom: 12px;
-`;
-
-const EmptyText = styled.p`
-  color: #888;
-  font-size: 15px;
-  margin-bottom: 32px;
-`;
-
-const GradeLegend = styled.div`
-  background: #f8f9fa;
-  border-radius: 12px;
-  padding: 20px;
-  display: inline-block;
-`;
-
-const LegendTitle = styled.div`
+const ItemName = styled.div`
   font-size: 13px;
-  font-weight: 600;
-  color: #666;
-  margin-bottom: 12px;
+  font-weight: 700;
+  color: #111;
+  line-height: 1.3;
+`;
+
+const ItemMeta = styled.div`
+  font-size: 11px;
+  color: #777;
+  margin-top: 2px;
+`;
+
+const ItemAddress = styled.div`
+  font-size: 10px;
+  color: #999;
+  margin-top: 1px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 `;
 
-const LegendItems = styled.div`
+const ResultRight = styled.div`
   display: flex;
-  gap: 20px;
-  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0;
 `;
 
-const LegendItem = styled.div`
+const GradeBox = styled.div`
+  width: 36px;
+  height: 36px;
+  border: 2px solid #111;
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 14px;
+  justify-content: center;
+  font-size: 22px;
+  font-weight: 900;
+  color: #111;
+`;
+
+const ScoreText = styled.div`
+  font-size: 10px;
+  color: #888;
+  margin-top: 3px;
+  letter-spacing: 0.5px;
+`;
+
+const ItemDivider = styled.div`
+  border-bottom: 1px dotted #ccc;
+`;
+
+const EmptyState = styled.div`
+  text-align: center;
+  margin: 28px 0 12px;
+`;
+
+const EmptyText = styled.p`
+  color: #888;
+  font-size: 12px;
+  margin: 4px 0;
+  letter-spacing: 1px;
+`;
+
+const LegendSection = styled.div`
+  margin-top: 16px;
+  text-align: left;
+`;
+
+const LegendTitle = styled.div`
+  font-size: 11px;
+  font-weight: 700;
   color: #555;
+  margin-bottom: 8px;
+  letter-spacing: 1px;
+  text-align: center;
 `;
 
-const LegendBadge = styled.div`
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
+const LegendRow = styled.div`
   display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 18px;
-  font-weight: 800;
-  color: #fff;
-  background: ${(p) => p.color};
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: 12px;
+  color: #555;
+  line-height: 1.8;
+`;
+
+const LegendDots = styled.span`
+  flex: 1;
+  border-bottom: 1px dotted #ccc;
+  margin: 0 6px;
+  position: relative;
+  top: -3px;
 `;
 
 const LegendNote = styled.p`
-  font-size: 12px;
+  font-size: 11px;
   color: #999;
-  margin: 12px 0 0;
+  text-align: center;
+  margin: 10px 0 0;
+  letter-spacing: 1px;
 `;
 
 // Detail view
@@ -500,179 +578,147 @@ const Detail = styled.div``;
 const BackButton = styled.button`
   background: none;
   border: none;
-  color: #1976d2;
-  font-size: 15px;
+  color: #555;
+  font-size: 11px;
+  font-family: "Courier New", Courier, monospace;
   cursor: pointer;
   padding: 0;
-  margin-bottom: 20px;
+  margin-bottom: 8px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
 
   &:hover {
-    text-decoration: underline;
+    color: #111;
   }
 `;
 
-const DetailHeader = styled.div`
-  display: flex;
-  gap: 18px;
-  align-items: flex-start;
-  margin-bottom: 24px;
-`;
-
-const DetailGradeBadge = styled.div`
-  width: 72px;
-  height: 72px;
-  border-radius: 14px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 40px;
-  font-weight: 800;
-  color: #fff;
-  background: ${(p) => p.color};
-  flex-shrink: 0;
-`;
-
-const DetailHeaderInfo = styled.div`
-  flex: 1;
-`;
-
 const DetailName = styled.h2`
-  font-size: 22px;
+  font-size: 16px;
   font-weight: 700;
-  color: #1a1a1a;
-  margin: 0;
+  color: #111;
+  margin: 8px 0 4px;
+  text-align: center;
 `;
 
-const DetailCuisine = styled.div`
-  font-size: 14px;
+const DetailLine = styled.div`
+  font-size: 11px;
   color: #666;
-  margin-top: 4px;
-`;
-
-const DetailAddress = styled.div`
-  font-size: 13px;
-  color: #888;
-  margin-top: 4px;
-`;
-
-const DetailPhone = styled.div`
-  font-size: 13px;
-  color: #888;
-  margin-top: 2px;
-`;
-
-const GradeSection = styled.div`
-  background: #f8f9fa;
-  border-radius: 12px;
-  padding: 20px;
-  margin-bottom: 24px;
-`;
-
-const GradeLabel = styled.div`
-  font-size: 12px;
-  font-weight: 600;
-  color: #888;
-  text-transform: uppercase;
+  text-align: center;
+  line-height: 1.6;
   letter-spacing: 0.5px;
-  margin-bottom: 8px;
+  text-transform: uppercase;
 `;
 
-const GradeDisplay = styled.div``;
-
-const GradeLetter = styled.div`
-  font-size: 32px;
-  font-weight: 800;
-  color: ${(p) => p.color};
+const GradeReceipt = styled.div`
+  text-align: center;
+  padding: 12px 0;
 `;
 
-const GradeScore = styled.div`
-  font-size: 14px;
-  color: #666;
-  margin-top: 4px;
+const GradeReceiptLabel = styled.div`
+  font-size: 11px;
+  color: #888;
+  letter-spacing: 2px;
+  margin-bottom: 4px;
 `;
 
-const GradeDate = styled.div`
-  font-size: 13px;
-  color: #999;
-  margin-top: 2px;
+const GradeBig = styled.div`
+  font-size: 64px;
+  font-weight: 900;
+  color: #111;
+  line-height: 1;
+  margin: 8px 0 12px;
 `;
 
-const InspectionsSection = styled.div``;
+const GradeReceiptRow = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: 12px;
+  color: #555;
+  line-height: 2;
+`;
 
 const SectionTitle = styled.h3`
-  font-size: 18px;
-  font-weight: 600;
-  color: #1a1a1a;
-  margin: 0 0 12px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #555;
+  margin: 8px 0 4px;
+  letter-spacing: 1px;
+  text-align: center;
 `;
 
-const InspectionCard = styled.div`
-  border: 1px solid #eee;
-  border-radius: 10px;
-  padding: 14px;
-  margin-bottom: 10px;
+const InspectionBlock = styled.div`
+  margin: 8px 0;
 `;
 
 const InspectionHeader = styled.div`
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  margin-bottom: 8px;
-`;
-
-const InspectionDate = styled.div`
-  font-size: 15px;
-  font-weight: 600;
+  align-items: baseline;
+  font-size: 12px;
+  font-weight: 700;
   color: #333;
+  margin-bottom: 6px;
 `;
 
 const InspectionMeta = styled.div`
   display: flex;
-  align-items: center;
   gap: 10px;
-  font-size: 13px;
+  font-size: 11px;
+  font-weight: 400;
   color: #666;
-`;
-
-const InspectionGrade = styled.span`
-  font-weight: 700;
-  color: ${(p) => p.color};
-  font-size: 16px;
 `;
 
 const ViolationsList = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
 `;
 
-const Violation = styled.div`
-  font-size: 13px;
+const ViolationItem = styled.div`
+  font-size: 11px;
   color: #444;
-  padding: 8px 10px;
-  border-radius: 8px;
-  background: ${(p) => (p.critical ? "#FFF3F0" : "#F5F5F5")};
+  line-height: 1.5;
 `;
 
 const ViolationFlag = styled.span`
-  display: inline-block;
-  font-size: 11px;
-  font-weight: 600;
-  padding: 2px 6px;
-  border-radius: 4px;
-  margin-right: 8px;
-  background: ${(p) => (p.critical ? "#FFCDD2" : "#E0E0E0")};
-  color: ${(p) => (p.critical ? "#C62828" : "#555")};
+  font-weight: 700;
+  color: ${(p) => (p.critical ? "#111" : "#888")};
+  ${(p) => p.critical && "text-decoration: underline;"}
 `;
 
 const ViolationText = styled.span`
-  line-height: 1.4;
+  display: block;
+  padding-left: 12px;
+  color: #555;
+  font-size: 10px;
+  line-height: 1.5;
 `;
 
 const NoViolations = styled.div`
-  font-size: 13px;
+  font-size: 11px;
+  color: #aaa;
+  letter-spacing: 0.5px;
+`;
+
+const Footer = styled.footer`
+  text-align: center;
+  margin-top: 20px;
+`;
+
+const FooterText = styled.div`
+  font-size: 10px;
   color: #999;
-  font-style: italic;
+  letter-spacing: 1px;
+  line-height: 1.8;
+`;
+
+const Barcode = styled.div`
+  font-size: 20px;
+  letter-spacing: 2px;
+  color: #111;
+  margin-top: 12px;
+  line-height: 1;
 `;
 
 export default App;
