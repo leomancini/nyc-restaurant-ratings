@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback } from "react";
+import React, { useState, useRef, useCallback, useEffect } from "react";
 import styled from "styled-components";
 
 const GRADE_LABELS = {
@@ -72,12 +72,14 @@ function App() {
     timerRef.current = setTimeout(() => search(val), 400);
   };
 
-  const selectRestaurant = async (camis) => {
+  const selectRestaurant = async (camis, name) => {
     setDetailLoading(true);
     try {
       const res = await fetch(`/api/restaurant/${camis}`);
       const data = await res.json();
       setSelected(data);
+      const slug = toSlug(name || data.name);
+      window.history.pushState(null, "", `/restaurant/${camis}/${slug}`);
     } catch {
       setSelected(null);
     } finally {
@@ -85,21 +87,57 @@ function App() {
     }
   };
 
-  const goBack = () => setSelected(null);
+  const goBack = () => {
+    setSelected(null);
+    window.history.pushState(null, "", "/");
+  };
+
+  // Handle slug URLs on load and popstate
+  useEffect(() => {
+    const loadFromUrl = async () => {
+      const path = window.location.pathname;
+      const match = path.match(/^\/restaurant\/(\d+)/);
+      if (match) {
+        const camis = match[1];
+        setDetailLoading(true);
+        try {
+          const res = await fetch(`/api/restaurant/${camis}`);
+          const data = await res.json();
+          setSelected(data);
+        } catch {
+          setSelected(null);
+        } finally {
+          setDetailLoading(false);
+        }
+      }
+    };
+    loadFromUrl();
+
+    const onPopState = () => {
+      const path = window.location.pathname;
+      if (path === "/") {
+        setSelected(null);
+      } else {
+        loadFromUrl();
+      }
+    };
+    window.addEventListener("popstate", onPopState);
+    return () => window.removeEventListener("popstate", onPopState);
+  }, []);
 
   return (
     <Receipt>
       <Paper>
-        <ReceiptHeader>
-          <StoreName>NYC RESTAURANT RATINGS</StoreName>
-          <Divider>{DASHES}</Divider>
-          <HeaderDetail>DEPT OF HEALTH & MENTAL HYGIENE</HeaderDetail>
-          <HeaderDetail>RESTAURANT INSPECTION RESULTS</HeaderDetail>
-          <Divider>{DASHES}</Divider>
-        </ReceiptHeader>
-
         {!selected && (
           <>
+            <ReceiptHeader>
+              <StoreName>NYC RESTAURANT RATINGS</StoreName>
+              <Divider>{DASHES}</Divider>
+              <HeaderDetail>DEPT OF HEALTH & MENTAL HYGIENE</HeaderDetail>
+              <HeaderDetail>RESTAURANT INSPECTION RESULTS</HeaderDetail>
+              <Divider>{DASHES}</Divider>
+            </ReceiptHeader>
+
             <SearchBox
               type="text"
               placeholder="SEARCH RESTAURANT NAME..."
@@ -122,7 +160,7 @@ function App() {
                   {results.map((r, i) => (
                     <ResultItem key={r.camis}>
                       <ResultRow
-                        onClick={() => selectRestaurant(r.camis)}
+                        onClick={() => selectRestaurant(r.camis, r.name)}
                       >
                         <ResultLeft>
                           <ItemNumber>{String(i + 1).padStart(2, "0")}</ItemNumber>
@@ -283,6 +321,13 @@ function dots(n) {
   return ".".repeat(n);
 }
 
+function toSlug(str) {
+  return str
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+}
+
 function titleCase(str) {
   if (!str) return "";
   return str
@@ -335,7 +380,7 @@ const StoreName = styled.h1`
 `;
 
 const HeaderDetail = styled.div`
-  font-size: 14px;
+  font-size: 16px;
   color: #555;
   letter-spacing: 0.5px;
   line-height: 1.6;
@@ -383,7 +428,7 @@ const Status = styled.p`
 `;
 
 const ResultCount = styled.p`
-  font-size: 14px;
+  font-size: 16px;
   color: #888;
   margin: 16px 0 6px;
   letter-spacing: 0.5px;
@@ -417,7 +462,7 @@ const ResultLeft = styled.div`
 `;
 
 const ItemNumber = styled.span`
-  font-size: 14px;
+  font-size: 16px;
   color: #aaa;
   flex-shrink: 0;
   padding-top: 2px;
@@ -429,19 +474,19 @@ const ResultDetails = styled.div`
 `;
 
 const ItemName = styled.div`
-  font-size: 17px;
+  font-size: 18px;
   color: #111;
   line-height: 1.3;
 `;
 
 const ItemMeta = styled.div`
-  font-size: 14px;
+  font-size: 16px;
   color: #777;
   margin-top: 3px;
 `;
 
 const ItemAddress = styled.div`
-  font-size: 13px;
+  font-size: 15px;
   color: #999;
   margin-top: 2px;
   text-transform: uppercase;
@@ -467,7 +512,7 @@ const GradeBox = styled.div`
 `;
 
 const ScoreText = styled.div`
-  font-size: 13px;
+  font-size: 15px;
   color: #888;
   margin-top: 4px;
   letter-spacing: 0.5px;
@@ -495,7 +540,7 @@ const LegendSection = styled.div`
 `;
 
 const LegendTitle = styled.div`
-  font-size: 15px;
+  font-size: 17px;
   color: #555;
   margin-bottom: 10px;
   letter-spacing: 0.5px;
@@ -520,7 +565,7 @@ const LegendDots = styled.span`
 `;
 
 const LegendNote = styled.p`
-  font-size: 14px;
+  font-size: 16px;
   color: #999;
   text-align: center;
   margin: 12px 0 0;
@@ -535,7 +580,7 @@ const BackButton = styled.button`
   background: none;
   border: none;
   color: #555;
-  font-size: 14px;
+  font-size: 16px;
   font-family: "Home Video", "Courier New", Courier, monospace;
   cursor: pointer;
   padding: 0;
@@ -557,7 +602,7 @@ const DetailName = styled.h2`
 `;
 
 const DetailLine = styled.div`
-  font-size: 15px;
+  font-size: 16px;
   color: #666;
   text-align: center;
   line-height: 1.6;
@@ -571,7 +616,7 @@ const GradeReceipt = styled.div`
 `;
 
 const GradeReceiptLabel = styled.div`
-  font-size: 14px;
+  font-size: 16px;
   color: #888;
   letter-spacing: 0.5px;
   margin-bottom: 6px;
@@ -588,7 +633,7 @@ const GradeReceiptRow = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: baseline;
-  font-size: 16px;
+  font-size: 17px;
   color: #555;
   line-height: 2;
 `;
@@ -618,7 +663,7 @@ const InspectionHeader = styled.div`
 const InspectionMeta = styled.div`
   display: flex;
   gap: 12px;
-  font-size: 14px;
+  font-size: 16px;
   color: #666;
 `;
 
@@ -629,7 +674,7 @@ const ViolationsList = styled.div`
 `;
 
 const ViolationItem = styled.div`
-  font-size: 14px;
+  font-size: 16px;
   color: #444;
   line-height: 1.5;
 `;
@@ -643,12 +688,12 @@ const ViolationText = styled.span`
   display: block;
   padding-left: 14px;
   color: #555;
-  font-size: 13px;
+  font-size: 15px;
   line-height: 1.5;
 `;
 
 const NoViolations = styled.div`
-  font-size: 14px;
+  font-size: 16px;
   color: #aaa;
   letter-spacing: 0.5px;
 `;
@@ -659,7 +704,7 @@ const Footer = styled.footer`
 `;
 
 const FooterText = styled.div`
-  font-size: 13px;
+  font-size: 15px;
   color: #999;
   letter-spacing: 0.5px;
   line-height: 1.8;
