@@ -168,10 +168,10 @@ function App() {
 
             {results && !loading && (
               <>
+                <ResultsList>
                 {results.length === 0 && (
                   <ResultItem><ResultRow as="div" style={{cursor: "default"}}><ResultLeft><ResultDetails><ItemName>NO RESULTS FOUND</ItemName></ResultDetails></ResultLeft></ResultRow></ResultItem>
                 )}
-                <ResultsList>
                   {results.map((r, i) => (
                     <ResultItem key={r.camis}>
                       <ResultRow
