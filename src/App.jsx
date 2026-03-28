@@ -492,11 +492,12 @@ const ResultRow = styled.div`
   justify-content: space-between;
   align-items: center;
   gap: 14px;
-  padding: 12px 0;
+  padding: 12px 16px;
+  margin: 0 -20px;
   cursor: pointer;
 
   &:hover {
-    background: rgba(0, 0, 0, 0.02);
+    background: rgba(0, 0, 0, 0.04);
   }
 `;
 
