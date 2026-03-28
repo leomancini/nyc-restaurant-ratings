@@ -151,6 +151,11 @@ function App() {
                 value={query}
                 onChange={handleInput}
                 autoFocus
+                onFocus={() => {
+                  setTimeout(() => window.scrollTo(0, 0), 50);
+                  setTimeout(() => window.scrollTo(0, 0), 150);
+                  setTimeout(() => window.scrollTo(0, 0), 300);
+                }}
               />
               {query && (
                 <ClearButton onClick={() => { setQuery(""); setResults(null); if (abortRef.current) abortRef.current.abort(); }}>
