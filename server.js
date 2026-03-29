@@ -20,7 +20,7 @@ const NYC_OPEN_DATA_URL =
 const APP_TOKEN = process.env.NYC_OPEN_DATA_TOKEN || "";
 
 app.use(express.json());
-app.use(express.static(join(__dirname, "dist")));
+app.use(express.static(join(__dirname, "dist"), { index: false }));
 
 // Search restaurants by name and/or address
 app.get("/api/search", async (req, res) => {
