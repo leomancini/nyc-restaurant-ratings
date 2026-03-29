@@ -186,10 +186,9 @@ function App() {
                           <ItemName>{titleCase(r.name)}</ItemName>
                           <ItemAddress>
                             {r.building} {r.street}
-                            {r.boro ? `, ${BORO_NAMES[r.boro] || r.boro}` : ""}
                           </ItemAddress>
-                          {r.score != null && (
-                            <ScoreXs>{r.score} POINTS</ScoreXs>
+                          {r.boro && (
+                            <ScoreXs>{BORO_NAMES[r.boro] || r.boro}</ScoreXs>
                           )}
                         </ResultDetails>
                       </ResultLeft>
@@ -286,40 +285,35 @@ function App() {
             <Spacer />
             <Spacer />
             <Spacer />
-            <Spacer />
 
-            {selected.grade && (
-              <>
-    
-                {selected.cuisine && (
-                  <GradeReceiptRow>
-                    <span>CUISINE</span>
-                    <LegendDots />
-                    <span>{selected.cuisine}</span>
-                  </GradeReceiptRow>
-                )}
-                {selected.score != null && (
-                  <GradeReceiptRow>
-                    <span>INSPECTION SCORE</span>
-                    <LegendDots />
-                    <span>{selected.score}</span>
-                  </GradeReceiptRow>
-                )}
-                {selected.gradeDate && (
-                  <GradeReceiptRow>
-                    <span>GRADE DATE</span>
-                    <LegendDots />
-                    <span>{formatDateShort(selected.gradeDate)}</span>
-                  </GradeReceiptRow>
-                )}
-              </>
+            {selected.gradeDate && (
+              <GradeReceiptRow>
+                <span>LAST GRADED</span>
+                <LegendDots />
+                <span>{formatDateShort(selected.gradeDate)}</span>
+              </GradeReceiptRow>
+            )}
+            {selected.inspections.length > 0 && (
+              <GradeReceiptRow>
+                <span>LAST INSPECTED</span>
+                <LegendDots />
+                <span>{formatDateShort(selected.inspections[0].date)}</span>
+              </GradeReceiptRow>
+            )}
+            {selected.inspections[0]?.score != null && selected.inspections[0]?.date !== selected.gradeDate && (
+              <GradeReceiptRow>
+                <span>ESTIMATED CURRENT GRADE</span>
+                <LegendDots />
+                <span>{estimateGrade(selected.inspections[0].score)}</span>
+              </GradeReceiptRow>
             )}
 
 
 
             <Spacer />
             <Spacer />
-            <SectionTitle>INSPECTION HISTORY</SectionTitle>
+            <Spacer />
+            <SectionTitle>HISTORY</SectionTitle>
 
             {selected.inspections.map((insp, i) => (
               <InspectionBlock key={i}>
@@ -328,8 +322,8 @@ function App() {
                 <InspectionHeader>
                   <DateBadge>&nbsp;{formatDateShort(insp.date)}&nbsp;</DateBadge>
                   <InspectionMeta>
-                    {insp.grade && <InspGrade grade={insp.grade}>GRADE {insp.grade}</InspGrade>}
-                    {insp.score != null && <span>{insp.score} POINTS</span>}
+                    {insp.score != null && <span>&nbsp;{insp.score} POINTS{insp.grade && <>&nbsp;</>}</span>}
+                    {insp.grade && <InspGrade grade={insp.grade}>&nbsp;{insp.grade === "Z" || insp.grade === "N" ? "?" : insp.grade}&nbsp;</InspGrade>}
                   </InspectionMeta>
                 </InspectionHeader>
                 <Spacer />
@@ -339,7 +333,7 @@ function App() {
                       <React.Fragment key={j}>
                         {j > 0 && <Spacer />}
                         <ViolationItem>
-                          <ViolationText critical={v.critical}>{v.description.replace(/º/g, "°")}</ViolationText>
+                          <ViolationText critical={v.critical}>{v.critical && <><b>!</b> </>}{v.description.replace(/º/g, "°")}</ViolationText>
                         </ViolationItem>
                       </React.Fragment>
                     ))}
@@ -408,7 +402,7 @@ function formatDateShort(dateStr) {
   const d = new Date(dateStr + "T00:00:00");
   return d.toLocaleDateString("en-US", {
     year: "numeric",
-    month: "long",
+    month: "short",
   }).toUpperCase();
 }
 
@@ -418,6 +412,23 @@ function formatPhone(phone) {
     return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
   }
   return phone;
+}
+
+function estimateGrade(score) {
+  if (score == null) return null;
+  if (score <= 13) return "A";
+  if (score <= 27) return "B";
+  return "C";
+}
+
+function timeAgo(dateStr) {
+  const d = new Date(dateStr + "T00:00:00");
+  const now = new Date();
+  const days = Math.floor((now - d) / (1000 * 60 * 60 * 24));
+  const weeks = Math.floor(days / 7);
+  if (weeks < 1) return "THIS WEEK";
+  if (weeks === 1) return "1 WEEK AGO";
+  return `${weeks} WEEKS AGO`;
 }
 
 // Styled Components
@@ -603,7 +614,7 @@ const GradeBox = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 30px;
+  font-size: 36px;
   color: ${(p) => GRADE_COLORS[p.grade] || "#111"};
   flex-shrink: 0;
 `;
@@ -723,7 +734,7 @@ const DetailName = styled.h2`
 
 const DetailLine = styled.div`
   font-size: 18px;
-  color: #666;
+  color: ${GRAY};
   text-align: center;  text-transform: uppercase;
 `;
 
@@ -751,7 +762,7 @@ const GradeBig = styled.div`
   margin: 0 auto;
   width: 120px;
   height: 120px;
-  border: 6px solid ${(p) => GRADE_COLORS[p.grade] || "#111"};
+  border: 8px solid ${(p) => GRADE_COLORS[p.grade] || "#111"};
   display: flex;
   align-items: center;
   justify-content: center;
@@ -844,6 +855,7 @@ const InspectionMeta = styled.div`
 
 const InspGrade = styled.span`
   color: ${(p) => GRADE_COLORS[p.grade] || "#111"};
+  font-weight: 700;
 `;
 
 const ViolationsList = styled.div`

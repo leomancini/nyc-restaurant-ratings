@@ -183,12 +183,14 @@ function aggregateRestaurants(rows) {
         inspDate > restaurant.latestInspection)
     ) {
       restaurant.latestInspection = inspDate;
+      if (row.score != null) {
+        restaurant.score = Number(row.score);
+      }
     }
 
     // Keep the most recent grade
     if (row.grade && (!restaurant.gradeDate || inspDate > restaurant.gradeDate)) {
       restaurant.grade = row.grade;
-      restaurant.score = row.score != null ? Number(row.score) : null;
       restaurant.gradeDate = inspDate;
     }
   }
