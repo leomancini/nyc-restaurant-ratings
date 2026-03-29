@@ -1,5 +1,5 @@
 import React, { useState, useRef, useCallback, useEffect } from "react";
-import styled from "styled-components";
+import styled, { keyframes } from "styled-components";
 
 const GRAY = "#aaa";
 
@@ -35,9 +35,14 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [selected, setSelected] = useState(null);
   const [detailLoading, setDetailLoading] = useState(() => /^\/restaurant\/\d+/.test(window.location.pathname));
+  const [fontsReady, setFontsReady] = useState(false);
   const timerRef = useRef(null);
   const abortRef = useRef(null);
   const hasSelected = useRef(false);
+
+  useEffect(() => {
+    document.fonts.ready.then(() => setFontsReady(true));
+  }, []);
 
   const search = useCallback(async (q) => {
     if (abortRef.current) abortRef.current.abort();
@@ -140,7 +145,7 @@ function App() {
   }, []);
 
   return (
-    <Receipt>
+    <Receipt style={fontsReady ? undefined : {opacity: 0}}>
       <Paper>
         {!selected && !detailLoading && (
           <>
@@ -439,6 +444,7 @@ const LINE_HEIGHT = 1.4;
 const Receipt = styled.div`
   background: #fff;
   line-height: ${LINE_HEIGHT};
+  transition: opacity 0.3s ease;
 `;
 
 const Paper = styled.div`
@@ -579,7 +585,7 @@ const ItemName = styled.div`
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  padding-top: 6px;
+  padding-top: 4px;
   padding-bottom: 0;
 `;
 
@@ -787,7 +793,6 @@ const SectionTitleRow = styled.h3`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding-top: 2px;
   padding-bottom: 0;
 `;
 

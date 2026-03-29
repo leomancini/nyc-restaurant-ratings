@@ -23,6 +23,11 @@
 }
 
 
+::selection {
+  background: #111;
+  color: #fff;
+}
+
 .prevent-ios-focus-scrolling {
   position: fixed;
   left: 0;
