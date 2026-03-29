@@ -247,6 +247,33 @@ function generateOgImages() {
 
     writeFileSync(join(ogDir, `${key}.png`), canvas.toBuffer("image/png"));
   }
+
+  // Homepage OG: A B C side by side
+  const canvas = createCanvas(W, H);
+  const ctx = canvas.getContext("2d");
+  ctx.fillStyle = "#fff";
+  ctx.fillRect(0, 0, W, H);
+
+  const homeBoxSize = 200;
+  const homeGap = 100;
+  const totalWidth = homeBoxSize * 3 + homeGap * 2;
+  const startX = W / 2 - totalWidth / 2;
+  const boxY = H / 2 - homeBoxSize / 2;
+
+  for (let i = 0; i < 3; i++) {
+    const { letter, color } = grades[i];
+    const boxX = startX + i * (homeBoxSize + homeGap);
+    ctx.strokeStyle = color;
+    ctx.lineWidth = Math.round(border * homeBoxSize / boxSize);
+    ctx.strokeRect(boxX, boxY, homeBoxSize, homeBoxSize);
+    ctx.fillStyle = color;
+    ctx.font = '120px "Home Video"';
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(letter, boxX + homeBoxSize / 2, boxY + homeBoxSize / 2);
+  }
+
+  writeFileSync(join(ogDir, "home.png"), canvas.toBuffer("image/png"));
 }
 
 generateOgImages();
@@ -256,7 +283,16 @@ const indexHtml = readFileSync(join(__dirname, "dist", "index.html"), "utf-8");
 
 app.get("*", async (req, res) => {
   const match = req.path.match(/^\/restaurant\/(\d+)/);
-  if (!match) return res.send(indexHtml);
+  if (!match) {
+    const homeOgTags = `
+    <meta property="og:title" content="NYC Restaurant Ratings" />
+    <meta property="og:description" content="Search NYC restaurant health inspection grades" />
+    <meta property="og:image" content="${req.protocol}://${req.get("host")}/og/home.png" />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:image" content="${req.protocol}://${req.get("host")}/og/home.png" />`;
+    return res.send(indexHtml.replace("</head>", `${homeOgTags}\n</head>`));
+  }
 
   const camis = match[1];
   try {
@@ -277,7 +313,7 @@ app.get("*", async (req, res) => {
     const address = `${first.building || ""} ${first.street || ""}`.trim();
     const boro = (first.boro || "").toUpperCase();
     const grade = data.find((r) => r.grade)?.grade || "";
-    const gradeText = grade && ["A", "B", "C"].includes(grade) ? ` — Grade ${grade}` : "";
+    const gradeText = grade && ["A", "B", "C"].includes(grade) ? ` – Grade ${grade}` : "";
 
     const ogUrl = `${req.protocol}://${req.get("host")}${req.path}`;
     const ogKey = ["A", "B", "C"].includes(grade) ? grade.toLowerCase() : "unknown";
@@ -285,13 +321,13 @@ app.get("*", async (req, res) => {
     const description = `${address} * ${boro}${gradeText}`;
 
     const ogTags = `
-    <meta property="og:title" content="${titleCase} — NYC Restaurant Ratings" />
+    <meta property="og:title" content="${titleCase} – NYC Restaurant Ratings" />
     <meta property="og:description" content="${description}" />
     <meta property="og:image" content="${ogImage}" />
     <meta property="og:url" content="${ogUrl}" />
     <meta property="og:type" content="website" />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="${titleCase} — NYC Restaurant Ratings" />
+    <meta name="twitter:title" content="${titleCase} – NYC Restaurant Ratings" />
     <meta name="twitter:description" content="${description}" />
     <meta name="twitter:image" content="${ogImage}" />`;
 
