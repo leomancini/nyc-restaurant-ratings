@@ -147,8 +147,6 @@ function App() {
             <Spacer />
             <ReceiptHeader>
               <StoreName>NYC RESTAURANT RATINGS</StoreName>
-              <Spacer />
-              <HeaderDetail>DEPT OF HEALTH & MENTAL HYGIENE</HeaderDetail>
             </ReceiptHeader>
 
             <Spacer />
@@ -235,7 +233,8 @@ function App() {
                   <SectionTitle>INFO</SectionTitle>
                   <Spacer />
                   <Spacer />
-                  <FooterText>DATA FROM NYC OPEN DATA</FooterText>
+                  <FooterText>DEPT OF HEALTH & MENTAL HYGIENE</FooterText>
+                  <FooterText>VIA NYC OPEN DATA</FooterText>
                   <FooterText>{new Date().toLocaleDateString("en-US", { year: "numeric", month: "2-digit", day: "2-digit" })} {new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })}</FooterText>
                   <FooterText>THANK YOU FOR DINING SAFELY</FooterText>
                 </Footer>
@@ -272,6 +271,7 @@ function App() {
               </>
             )}
 
+            <Spacer />
             <Spacer />
             <Spacer />
             <DetailName>{titleCase(selected.name)}</DetailName>
@@ -349,13 +349,6 @@ function App() {
 
             <Spacer />
             <Spacer />
-            <Footer>
-              <SectionTitle>INFO</SectionTitle>
-              <Spacer />
-              <FooterText>DATA FROM NYC OPEN DATA</FooterText>
-              <FooterText>{new Date().toLocaleDateString("en-US", { year: "numeric", month: "2-digit", day: "2-digit" })} {new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })}</FooterText>
-              <FooterText>THANK YOU FOR DINING SAFELY</FooterText>
-            </Footer>
             </Detail>}
           </Detail>
         )}
