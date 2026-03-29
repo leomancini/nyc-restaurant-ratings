@@ -36,12 +36,15 @@ function App() {
   const [selected, setSelected] = useState(null);
   const [detailLoading, setDetailLoading] = useState(() => /^\/restaurant\/\d+/.test(window.location.pathname));
   const [fontsReady, setFontsReady] = useState(false);
+  const [now, setNow] = useState(new Date());
   const timerRef = useRef(null);
   const abortRef = useRef(null);
   const hasSelected = useRef(false);
 
   useEffect(() => {
     document.fonts.ready.then(() => setFontsReady(true));
+    const interval = setInterval(() => setNow(new Date()), 60000);
+    return () => clearInterval(interval);
   }, []);
 
   const search = useCallback(async (q) => {
@@ -240,7 +243,7 @@ function App() {
                   <FooterText>DATA FROM</FooterText>
                   <FooterText>DEPT OF HEALTH & MENTAL HYGIENE</FooterText>
                   <FooterText>VIA NYC OPEN DATA</FooterText>
-                  <FooterText>{new Date().toLocaleDateString("en-US", { year: "numeric", month: "2-digit", day: "2-digit" })} {new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })}</FooterText>
+                  <FooterText>{now.toLocaleDateString("en-US", { year: "numeric", month: "2-digit", day: "2-digit" })} {now.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })}</FooterText>
                   <FooterText>THANK YOU FOR DINING SAFELY</FooterText>
                 </Footer>
                 <Spacer />
