@@ -534,7 +534,7 @@ const ResultItem = styled.div``;
 const ResultRow = styled.div`
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: center;
   gap: ${GAP};
   padding: 12px 20px;
   margin: 0 -20px;
@@ -564,7 +564,7 @@ const ResultDetails = styled.div`
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 0;
 `;
 
 const ItemName = styled.div`
