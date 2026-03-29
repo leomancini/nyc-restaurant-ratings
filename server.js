@@ -2,7 +2,7 @@ import express from "express";
 import { fileURLToPath } from "url";
 import { dirname, join } from "path";
 import { createCanvas, registerFont } from "canvas";
-import { readFileSync } from "fs";
+import { readFileSync, mkdirSync, writeFileSync } from "fs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -210,66 +210,46 @@ function aggregateRestaurants(rows) {
   });
 }
 
-// OG image generation
-app.get("/api/og/:camis", async (req, res) => {
-  try {
-    const { camis } = req.params;
-    const params = new URLSearchParams({
-      $where: `camis='${camis}'`,
-      $order: "inspection_date DESC",
-      $limit: "10",
-    });
-    if (APP_TOKEN) params.set("$$app_token", APP_TOKEN);
-    const response = await fetch(`${NYC_OPEN_DATA_URL}?${params}`);
-    const data = await response.json();
-    if (!data.length) return res.status(404).send("Not found");
+// Generate static OG images at startup
+function generateOgImages() {
+  const ogDir = join(__dirname, "dist/og");
+  mkdirSync(ogDir, { recursive: true });
 
-    const first = data[0];
-    const name = first.dba || "";
-    const address = `${first.building || ""} ${first.street || ""}`.trim();
-    const boro = (first.boro || "").toUpperCase();
-    const grade = data.find((r) => r.grade)?.grade || null;
-    const score = first.score != null ? Number(first.score) : null;
+  const grades = [
+    { key: "a", letter: "A", color: GRADE_COLORS.A },
+    { key: "b", letter: "B", color: GRADE_COLORS.B },
+    { key: "c", letter: "C", color: GRADE_COLORS.C },
+    { key: "unknown", letter: "?", color: "#111" },
+  ];
 
-    const W = 1200, H = 630;
+  const W = 1200, H = 630;
+  const boxSize = 340;
+  const border = 20;
+
+  for (const { key, letter, color } of grades) {
     const canvas = createCanvas(W, H);
     const ctx = canvas.getContext("2d");
 
-    // Background
     ctx.fillStyle = "#fff";
     ctx.fillRect(0, 0, W, H);
 
-    // Restaurant name
-    ctx.fillStyle = "#111";
-    ctx.font = '42px "Home Video"';
+    const boxX = W / 2 - boxSize / 2;
+    const boxY = H / 2 - boxSize / 2;
+    ctx.strokeStyle = color;
+    ctx.lineWidth = border;
+    ctx.strokeRect(boxX, boxY, boxSize, boxSize);
+
+    ctx.fillStyle = color;
+    ctx.font = '200px "Home Video"';
     ctx.textAlign = "center";
-    const titleCase = name.toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase());
-    let displayName = titleCase;
-    while (ctx.measureText(displayName).width > W - 160 && displayName.length > 0) {
-      displayName = displayName.slice(0, -1);
-    }
-    if (displayName !== titleCase) displayName += "...";
-    ctx.fillText(displayName, W / 2, H / 2 - 30);
+    ctx.textBaseline = "middle";
+    ctx.fillText(letter, W / 2, H / 2);
 
-    // Grade
-    if (grade && GRADE_COLORS[grade]) {
-      ctx.fillStyle = GRADE_COLORS[grade];
-      ctx.font = '42px "Home Video"';
-      ctx.fillText(grade, W / 2, H / 2 + 40);
-    } else if (grade === "Z" || grade === "N") {
-      ctx.fillStyle = "#111";
-      ctx.font = '42px "Home Video"';
-      ctx.fillText("?", W / 2, H / 2 + 40);
-    }
-
-    res.setHeader("Content-Type", "image/png");
-    res.setHeader("Cache-Control", "public, max-age=86400");
-    res.send(canvas.toBuffer("image/png"));
-  } catch (error) {
-    console.error("OG image error:", error);
-    res.status(500).send("Error generating image");
+    writeFileSync(join(ogDir, `${key}.png`), canvas.toBuffer("image/png"));
   }
-});
+}
+
+generateOgImages();
 
 // SPA fallback with OG meta injection
 const indexHtml = readFileSync(join(__dirname, "dist", "index.html"), "utf-8");
@@ -300,7 +280,8 @@ app.get("*", async (req, res) => {
     const gradeText = grade && ["A", "B", "C"].includes(grade) ? ` — Grade ${grade}` : "";
 
     const ogUrl = `${req.protocol}://${req.get("host")}${req.path}`;
-    const ogImage = `${req.protocol}://${req.get("host")}/api/og/${camis}`;
+    const ogKey = ["A", "B", "C"].includes(grade) ? grade.toLowerCase() : "unknown";
+    const ogImage = `${req.protocol}://${req.get("host")}/og/${ogKey}.png`;
     const description = `${address} * ${boro}${gradeText}`;
 
     const ogTags = `
