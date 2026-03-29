@@ -258,6 +258,7 @@ function App() {
             {selected && <Detail style={detailLoading ? {visibility: "hidden", height: 0, overflow: "hidden"} : undefined}>
 
             <Spacer />
+            <Spacer />
             {selected.grade && GRADE_COLORS[selected.grade] && (
               <GradeReceipt>
                 <GradeBig grade={selected.grade}>{GRADE_LABELS[selected.grade] || selected.grade}</GradeBig>
@@ -503,6 +504,10 @@ const ClearButton = styled.button`
   &:hover {
     color: #fff;
   }
+
+  &:active {
+    color: #fff;
+  }
 `;
 
 const SearchBox = styled.input`
@@ -553,6 +558,10 @@ const ResultRow = styled.div`
 
   &:hover {
     background: rgba(0, 0, 0, 0.04);
+  }
+
+  &:active {
+    background: rgba(0, 0, 0, 0.08);
   }
 `;
 
@@ -726,6 +735,10 @@ const BackButton = styled.button`
 
   &:hover {
     color: #111;
+  }
+
+  &:active {
+    color: #000;
   }
 `;
 
