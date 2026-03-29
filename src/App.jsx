@@ -836,6 +836,7 @@ const InspectionBlock = styled.div`
 const DateBadge = styled.span`
   font-weight: 700;
   color: #111;
+  -webkit-font-smoothing: none;
 `;
 
 const InspectionHeader = styled.div`
@@ -856,6 +857,7 @@ const InspectionMeta = styled.div`
 const InspGrade = styled.span`
   color: ${(p) => GRADE_COLORS[p.grade] || "#111"};
   font-weight: 700;
+  -webkit-font-smoothing: none;
 `;
 
 const ViolationsList = styled.div`
