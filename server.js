@@ -104,12 +104,21 @@ app.get("/api/restaurant/:camis", async (req, res) => {
           date,
           score: row.score != null ? Number(row.score) : null,
           grade: row.grade || null,
+          gradeDate: row.grade_date?.split("T")[0] || null,
           type: row.inspection_type || null,
           violations: [],
         });
       }
+      const insp = inspectionMap.get(date);
+      if (row.grade && !insp.grade) {
+        insp.grade = row.grade;
+        insp.gradeDate = row.grade_date?.split("T")[0] || null;
+      }
+      if (row.score != null && insp.score == null) {
+        insp.score = Number(row.score);
+      }
       if (row.violation_description) {
-        inspectionMap.get(date).violations.push({
+        insp.violations.push({
           code: row.violation_code,
           description: row.violation_description,
           critical: row.critical_flag === "Critical",
@@ -135,7 +144,7 @@ app.get("/api/restaurant/:camis", async (req, res) => {
       cuisine: first.cuisine_description,
       grade: latestGraded?.grade || null,
       score: latestGraded?.score ?? null,
-      gradeDate: latestGraded?.date || null,
+      gradeDate: latestGraded?.gradeDate || null,
       inspections,
     });
   } catch (error) {

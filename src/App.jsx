@@ -232,6 +232,7 @@ function App() {
                 </LegendSection>
                 <Spacer />
                 <Spacer />
+                <Spacer />
                 <Footer>
                   <SectionTitle>INFO</SectionTitle>
                   <Spacer />
@@ -285,6 +286,8 @@ function App() {
               {BORO_NAMES[selected.boro] || selected.boro}{" "}
               {selected.zipcode}
             </DetailLine>
+            <Spacer />
+            <Spacer />
             <Spacer />
             <Spacer />
 
