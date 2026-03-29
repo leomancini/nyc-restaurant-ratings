@@ -273,7 +273,6 @@ function App() {
 
             <Spacer />
             <Spacer />
-            <Spacer />
             <DetailName>{titleCase(selected.name)}</DetailName>
             <DetailLine>
               {selected.building} {selected.street}
@@ -565,6 +564,7 @@ const ItemName = styled.div`
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  padding: 2px 0;
 `;
 
 const ItemMeta = styled.div`
