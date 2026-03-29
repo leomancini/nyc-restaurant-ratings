@@ -329,7 +329,7 @@ function App() {
                 <Spacer />
                 <Spacer />
                 <InspectionHeader>
-                  <DateBadge>{formatDateShort(insp.date)}</DateBadge>
+                  <DateBadge>&nbsp;{formatDateShort(insp.date)}&nbsp;</DateBadge>
                   <InspectionMeta>
                     {insp.grade && <InspGrade grade={insp.grade}>GRADE {insp.grade}</InspGrade>}
                     {insp.score != null && <span>{insp.score} POINTS</span>}
@@ -571,7 +571,7 @@ const ItemName = styled.div`
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  padding: 2px 0;
+  padding: 4px 0;
 `;
 
 const ItemMeta = styled.div`
