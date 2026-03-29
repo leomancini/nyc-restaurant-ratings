@@ -17,6 +17,7 @@
 * {
   box-sizing: border-box;
   -webkit-tap-highlight-color: transparent;
+  -webkit-font-smoothing: none;
 }
 
 .prevent-ios-focus-scrolling {
@@ -28,8 +29,6 @@
 body {
   margin: 0;
   font-family: "Home Video", "Courier New", Courier, monospace;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
   background: #fff;
   color: #111;
 }

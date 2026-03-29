@@ -27,14 +27,14 @@ const BORO_NAMES = {
 };
 
 const DASHES = "- - - - - - - - - - - - - - - - - -";
-const DOTS = ". . . . . . . . . . . . . . . . . .";
+const DOTS = ". . . . . . . . . .";
 
 function App() {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState(null);
   const [loading, setLoading] = useState(false);
   const [selected, setSelected] = useState(null);
-  const [detailLoading, setDetailLoading] = useState(false);
+  const [detailLoading, setDetailLoading] = useState(() => /^\/restaurant\/\d+/.test(window.location.pathname));
   const timerRef = useRef(null);
   const abortRef = useRef(null);
   const hasSelected = useRef(false);
@@ -82,7 +82,9 @@ function App() {
   };
 
   const selectRestaurant = async (camis, name) => {
+    setSelected(null);
     setDetailLoading(true);
+    window.scrollTo(0, 0);
     try {
       const res = await fetch(`/api/restaurant/${camis}`);
       const data = await res.json();
@@ -92,6 +94,7 @@ function App() {
     } catch {
       setSelected(null);
     } finally {
+      await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
       setDetailLoading(false);
     }
   };
@@ -117,6 +120,7 @@ function App() {
         } catch {
           setSelected(null);
         } finally {
+          await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
           setDetailLoading(false);
         }
       }
@@ -138,14 +142,18 @@ function App() {
   return (
     <Receipt>
       <Paper>
-        {!selected && (
+        {!selected && !detailLoading && (
           <>
+            <Spacer />
+            <Spacer />
             <ReceiptHeader>
               <StoreName>NYC RESTAURANT RATINGS</StoreName>
+              <Spacer />
               <HeaderDetail>DEPT OF HEALTH & MENTAL HYGIENE</HeaderDetail>
-              <HeaderDetail>RESTAURANT INSPECTION RESULTS</HeaderDetail>
             </ReceiptHeader>
 
+            <Spacer />
+            <Spacer />
             <SearchWrap>
               <SearchBox
                 type="text"
@@ -162,80 +170,112 @@ function App() {
               )}
             </SearchWrap>
 
-            {loading && (
-              <ResultsList><ResultItem><ResultRow as="div" style={{cursor: "default"}}><ResultLeft><ResultDetails><ItemName>SEARCHING{dots(3)}</ItemName></ResultDetails></ResultLeft></ResultRow></ResultItem></ResultsList>
-            )}
-
-            {results && !loading && (
+            {(loading || (results && !loading)) && (
               <>
                 <ResultsList>
-                {results.length === 0 && (
-                  <ResultItem><ResultRow as="div" style={{cursor: "default"}}><ResultLeft><ResultDetails><ItemName>NO RESULTS FOUND</ItemName></ResultDetails></ResultLeft></ResultRow></ResultItem>
+                {loading && (
+                  <ResultItem><ResultRow as="div" style={{cursor: "default"}}><ResultLeft><ResultDetails><ItemName style={{color: GRAY}}>SEARCHING{dots(3)}</ItemName><ItemAddress>&nbsp;</ItemAddress><ScoreXs>&nbsp;</ScoreXs></ResultDetails></ResultLeft><ResultRight><GradeBox style={{visibility: "hidden"}}>{" "}</GradeBox></ResultRight></ResultRow></ResultItem>
                 )}
-                  {results.map((r, i) => (
-                    <ResultItem key={r.camis}>
-                      <ResultRow
-                        onClick={() => selectRestaurant(r.camis, r.name)}
-                      >
-                        <ResultLeft>
-                          <ResultDetails>
-                            <ItemName>{titleCase(r.name)}</ItemName>
-                            <ItemAddress>
-                              {r.building} {r.street}
-                              {r.boro ? `, ${BORO_NAMES[r.boro] || r.boro}` : ""}
-                              {r.zipcode ? ` ${r.zipcode}` : ""}
-                            </ItemAddress>
-                            {r.score != null && (
-                              <ScoreXs>{r.score} POINTS</ScoreXs>
-                            )}
-                          </ResultDetails>
-                        </ResultLeft>
-                        <ResultRight>
-                          <GradeBox grade={r.grade}>
-                            {r.grade || "-"}
-                          </GradeBox>
-                        </ResultRight>
-                      </ResultRow>
-                      <ItemDivider />
-                    </ResultItem>
-                  ))}
+                {results && !loading && results.length === 0 && (
+                  <ResultItem><ResultRow as="div" style={{cursor: "default"}}><ResultLeft><ResultDetails><ItemName style={{color: GRAY}}>NO RESULTS FOUND</ItemName><ItemAddress>&nbsp;</ItemAddress><ScoreXs>&nbsp;</ScoreXs></ResultDetails></ResultLeft><ResultRight><GradeBox style={{visibility: "hidden"}}>{" "}</GradeBox></ResultRight></ResultRow></ResultItem>
+                )}
+                {results && !loading && results.map((r, i) => (
+                  <ResultItem key={r.camis}>
+                    <ResultRow
+                      onClick={() => selectRestaurant(r.camis, r.name)}
+                    >
+                      <ResultLeft>
+                        <ResultDetails>
+                          <ItemName>{titleCase(r.name)}</ItemName>
+                          <ItemAddress>
+                            {r.building} {r.street}
+                            {r.boro ? `, ${BORO_NAMES[r.boro] || r.boro}` : ""}
+                          </ItemAddress>
+                          {r.score != null && (
+                            <ScoreXs>{r.score} POINTS</ScoreXs>
+                          )}
+                        </ResultDetails>
+                      </ResultLeft>
+                      <ResultRight>
+                        <GradeBox grade={r.grade}>
+                          {r.grade === "Z" || r.grade === "N" ? "?" : r.grade || "-"}
+                        </GradeBox>
+                      </ResultRight>
+                    </ResultRow>
+                  </ResultItem>
+                ))}
                 </ResultsList>
               </>
             )}
 
             {!results && !loading && (
               <EmptyState>
+                <Spacer />
+                <Spacer />
                 <LegendSection>
-                  <LegendTitle>GRADE SCALE</LegendTitle>
-                  <LegendRow>
-                    <span>[A]</span>
-                    <LegendDots />
-                    <span>SCORE 0-13</span>
-                  </LegendRow>
-                  <LegendRow>
-                    <span>[B]</span>
-                    <LegendDots />
-                    <span>SCORE 14-27</span>
-                  </LegendRow>
-                  <LegendRow>
-                    <span>[C]</span>
-                    <LegendDots />
-                    <span>SCORE 28+</span>
-                  </LegendRow>
-                  <LegendNote>* LOWER SCORE = BETTER *</LegendNote>
+                  <SectionTitle>GRADE SCALE</SectionTitle>
+                  <Spacer />
+                  <Spacer />
+                  <GradeColumns>
+                    <GradeColumn>
+                      <GradeBox grade="A">A</GradeBox>
+                      <GradeRange>0-13</GradeRange>
+                    </GradeColumn>
+                    <GradeColumn>
+                      <GradeBox grade="B">B</GradeBox>
+                      <GradeRange>14-27</GradeRange>
+                    </GradeColumn>
+                    <GradeColumn>
+                      <GradeBox grade="C">C</GradeBox>
+                      <GradeRange>28+</GradeRange>
+                    </GradeColumn>
+                  </GradeColumns>
                 </LegendSection>
+                <Spacer />
+                <Spacer />
+                <Footer>
+                  <SectionTitle>INFO</SectionTitle>
+                  <Spacer />
+                  <Spacer />
+                  <FooterText>DATA FROM NYC OPEN DATA</FooterText>
+                  <FooterText>{new Date().toLocaleDateString("en-US", { year: "numeric", month: "2-digit", day: "2-digit" })} {new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })}</FooterText>
+                  <FooterText>THANK YOU FOR DINING SAFELY</FooterText>
+                </Footer>
+                <Spacer />
+                <Spacer />
               </EmptyState>
             )}
           </>
         )}
 
-        {selected && !detailLoading && (
+        {(selected || detailLoading) && (
           <Detail>
-            <BackButton onClick={goBack}>&lt; BACK TO RESULTS</BackButton>
-            <Divider>{DOTS}</Divider>
+            {!detailLoading && <BackButton onClick={goBack}>&lt; BACK</BackButton>}
+            {detailLoading && <BackButton style={{cursor: "default", color: GRAY}}>LOADING{dots(3)}</BackButton>}
+            {selected && <Detail style={detailLoading ? {visibility: "hidden", height: 0, overflow: "hidden"} : undefined}>
 
+            <Spacer />
+            {selected.grade && GRADE_COLORS[selected.grade] && (
+              <GradeReceipt>
+                <GradeBig grade={selected.grade}>{GRADE_LABELS[selected.grade] || selected.grade}</GradeBig>
+              </GradeReceipt>
+            )}
+            {(selected.grade === "Z" || selected.grade === "N") && (
+              <>
+                <Spacer />
+                <Spacer />
+                <GradeReceipt>
+                  <GradeBig>?</GradeBig>
+                  <Spacer />
+                  <Spacer />
+                  <GradePending>{selected.grade === "Z" ? "GRADE PENDING" : "NOT YET GRADED"}</GradePending>
+                </GradeReceipt>
+              </>
+            )}
+
+            <Spacer />
+            <Spacer />
             <DetailName>{titleCase(selected.name)}</DetailName>
-            <DetailLine>{selected.cuisine}</DetailLine>
             <DetailLine>
               {selected.building} {selected.street}
             </DetailLine>
@@ -243,45 +283,51 @@ function App() {
               {BORO_NAMES[selected.boro] || selected.boro}{" "}
               {selected.zipcode}
             </DetailLine>
-            {selected.phone && (
-              <DetailLine>TEL: {formatPhone(selected.phone)}</DetailLine>
-            )}
-
-            <Divider>{DOTS}</Divider>
+            <Spacer />
+            <Spacer />
 
             {selected.grade && (
               <>
-                <GradeReceipt>
-                  <GradeBig grade={selected.grade}>{GRADE_LABELS[selected.grade] || selected.grade}</GradeBig>
-                  {selected.score != null && (
-                    <GradeReceiptRow>
-                      <span>INSPECTION SCORE</span>
-                      <LegendDots />
-                      <span>{selected.score}</span>
-                    </GradeReceiptRow>
-                  )}
-                  {selected.gradeDate && (
-                    <GradeReceiptRow>
-                      <span>GRADE DATE</span>
-                      <LegendDots />
-                      <span>{formatDateShort(selected.gradeDate)}</span>
-                    </GradeReceiptRow>
-                  )}
-                </GradeReceipt>
-                <Divider>{DOTS}</Divider>
+    
+                {selected.cuisine && (
+                  <GradeReceiptRow>
+                    <span>CUISINE</span>
+                    <LegendDots />
+                    <span>{selected.cuisine}</span>
+                  </GradeReceiptRow>
+                )}
+                {selected.score != null && (
+                  <GradeReceiptRow>
+                    <span>INSPECTION SCORE</span>
+                    <LegendDots />
+                    <span>{selected.score}</span>
+                  </GradeReceiptRow>
+                )}
+                {selected.gradeDate && (
+                  <GradeReceiptRow>
+                    <span>GRADE DATE</span>
+                    <LegendDots />
+                    <span>{formatDateShort(selected.gradeDate)}</span>
+                  </GradeReceiptRow>
+                )}
               </>
             )}
 
+
+
+            <Spacer />
+            <Spacer />
             <SectionTitle>INSPECTION HISTORY</SectionTitle>
-            <Divider>{DOTS}</Divider>
+            <Spacer />
 
             {selected.inspections.map((insp, i) => (
               <InspectionBlock key={i}>
+                <Spacer />
                 <InspectionHeader>
-                  <span>{formatDateShort(insp.date)}</span>
+                  <DateBadge>{formatDateShort(insp.date)}</DateBadge>
                   <InspectionMeta>
-                    {insp.grade && <InspGrade grade={insp.grade}>GRADE: {insp.grade}</InspGrade>}
-                    {insp.score != null && <span>SCR: {insp.score}</span>}
+                    {insp.grade && <InspGrade grade={insp.grade}>GRADE {insp.grade}</InspGrade>}
+                    {insp.score != null && <span>{insp.score} POINTS</span>}
                   </InspectionMeta>
                 </InspectionHeader>
                 {insp.violations.length > 0 ? (
@@ -289,7 +335,7 @@ function App() {
                     {insp.violations.map((v, j) => (
                       <ViolationItem key={j}>
                         <ViolationFlag critical={v.critical}>
-                          {v.critical ? "!! CRITICAL" : "   GENERAL "}
+                          {v.critical ? "! CRITICAL !" : "GENERAL"}
                         </ViolationFlag>
                         <ViolationText>{v.description}</ViolationText>
                       </ViolationItem>
@@ -298,22 +344,21 @@ function App() {
                 ) : (
                   <NoViolations>NO VIOLATIONS RECORDED</NoViolations>
                 )}
-                {i < selected.inspections.length - 1 && (
-                  <Divider>{DOTS}</Divider>
-                )}
               </InspectionBlock>
             ))}
 
+            <Spacer />
+            <Spacer />
             <Footer>
-              <Divider>{DOTS}</Divider>
+              <SectionTitle>INFO</SectionTitle>
+              <Spacer />
               <FooterText>DATA FROM NYC OPEN DATA</FooterText>
               <FooterText>{new Date().toLocaleDateString("en-US", { year: "numeric", month: "2-digit", day: "2-digit" })} {new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })}</FooterText>
               <FooterText>THANK YOU FOR DINING SAFELY</FooterText>
             </Footer>
+            </Detail>}
           </Detail>
         )}
-
-        {detailLoading && <Status>LOADING{dots(3)}</Status>}
       </Paper>
     </Receipt>
   );
@@ -382,8 +427,12 @@ function formatPhone(phone) {
 
 // Styled Components
 
+const GAP = "10px";
+const LINE_HEIGHT = 1.4;
+
 const Receipt = styled.div`
   background: #fff;
+  line-height: ${LINE_HEIGHT};
 `;
 
 const Paper = styled.div`
@@ -391,42 +440,40 @@ const Paper = styled.div`
   max-width: 600px;
   margin: 0 auto;
   padding: 16px 20px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: ${GAP};
 `;
 
 const ReceiptHeader = styled.div`
   text-align: center;
-  margin-bottom: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: ${GAP};
 `;
 
 const StoreName = styled.h1`
   font-size: 28px;
   font-weight: 400;
-  letter-spacing: 0.5px;
-  line-height: 1.4;
   color: #111;
-  margin: 0 0 10px;
+  margin: 0;
 `;
 
 const HeaderDetail = styled.div`
   font-size: 16px;
   color: #555;
-  letter-spacing: 0.5px;
-  line-height: 1.6;
 `;
 
 const Divider = styled.div`
   text-align: center;
   color: ${GRAY};
   font-size: 14px;
-  margin: 10px 0;
-  letter-spacing: 0.5px;
-  overflow: hidden;
+  margin: 0;  overflow: hidden;
   white-space: nowrap;
 `;
 
 const SearchWrap = styled.div`
   position: relative;
-  margin-bottom: 8px;
 `;
 
 const ClearButton = styled.button`
@@ -455,9 +502,7 @@ const SearchBox = styled.input`
   border: none;
   outline: none;
   background: #111;
-  color: #fff;
-  letter-spacing: 0.5px;
-  box-sizing: border-box;
+  color: #fff;  box-sizing: border-box;
   text-transform: uppercase;
 
   &::placeholder {
@@ -468,9 +513,8 @@ const SearchBox = styled.input`
 const Status = styled.p`
   text-align: center;
   color: ${GRAY};
-  margin: 24px 0;
+  margin: 0;
   font-size: 16px;
-  letter-spacing: 0.5px;
 `;
 
 const ResultCount = styled.p`
@@ -490,9 +534,9 @@ const ResultItem = styled.div``;
 const ResultRow = styled.div`
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  gap: 14px;
-  padding: 12px 16px;
+  align-items: flex-start;
+  gap: ${GAP};
+  padding: 12px 20px;
   margin: 0 -20px;
   cursor: pointer;
 
@@ -503,7 +547,7 @@ const ResultRow = styled.div`
 
 const ResultLeft = styled.div`
   display: flex;
-  gap: 12px;
+  gap: ${GAP};
   flex: 1;
   min-width: 0;
 `;
@@ -520,8 +564,7 @@ const ResultDetails = styled.div`
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  justify-content: center;
+  gap: 2px;
 `;
 
 const ItemName = styled.div`
@@ -545,9 +588,7 @@ const ScoreXs = styled.div`
 const ItemAddress = styled.div`
   font-size: 15px;
   color: ${GRAY};
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  white-space: nowrap;
+  text-transform: uppercase;  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 `;
@@ -558,13 +599,14 @@ const ResultRight = styled.div`
 `;
 
 const GradeBox = styled.div`
-  width: 68px;
-  height: 68px;
+  width: 60px;
+  height: 60px;
   border: 4px solid ${(p) => GRADE_COLORS[p.grade] || "#111"};
+  box-sizing: border-box;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 40px;
+  font-size: 30px;
   color: ${(p) => GRADE_COLORS[p.grade] || "#111"};
   flex-shrink: 0;
 `;
@@ -572,8 +614,6 @@ const GradeBox = styled.div`
 const ScoreText = styled.div`
   font-size: 15px;
   color: ${GRAY};
-  margin-top: 4px;
-  letter-spacing: 0.5px;
 `;
 
 const ItemDivider = styled.div`
@@ -582,27 +622,45 @@ const ItemDivider = styled.div`
 
 const EmptyState = styled.div`
   text-align: center;
-  margin: 12px 0 8px;
+  display: flex;
+  flex-direction: column;
+  gap: ${GAP};
 `;
 
 const EmptyText = styled.p`
   color: ${GRAY};
   font-size: 16px;
-  margin: 6px 0;
-  letter-spacing: 0.5px;
+  margin: 0;
+`;
+
+const GradeColumns = styled.div`
+  display: flex;
+  justify-content: space-around;
+`;
+
+const GradeColumn = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: ${GAP};
+`;
+
+const GradeRange = styled.div`
+  font-size: 15px;
+  color: ${GRAY};
 `;
 
 const LegendSection = styled.div`
-  margin-top: 20px;
   text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: ${GAP};
 `;
 
 const LegendTitle = styled.div`
   font-size: 17px;
   color: #555;
-  margin-bottom: 10px;
-  letter-spacing: 0.5px;
-  text-align: center;
+  margin: 0;  text-align: center;
 `;
 
 const LegendRow = styled.div`
@@ -610,42 +668,48 @@ const LegendRow = styled.div`
   justify-content: space-between;
   align-items: baseline;
   font-size: 16px;
-  color: #555;
-  line-height: 2;
+  color: #111;
 `;
 
 const LegendDots = styled.span`
   flex: 1;
-  border-bottom: 2px dotted ${GRAY};
   margin: 0 8px;
+  margin: 0 8px;
+  background: repeating-linear-gradient(to right, #ddd 0px, #ddd 2px, transparent 2px, transparent 8px);
+  background-repeat: repeat-x;
+  background-position: bottom;
+  min-height: 2px;
   align-self: baseline;
-  position: relative;
-  top: -4px;
 `;
 
 const LegendNote = styled.p`
   font-size: 16px;
   color: ${GRAY};
   text-align: center;
-  margin: 12px 0 0;
-  letter-spacing: 0.5px;
+  margin: 0;
 `;
 
 // Detail view
 
-const Detail = styled.div``;
+const Spacer = styled.div`
+  height: 1px;
+`;
+
+const Detail = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${GAP};
+`;
 
 const BackButton = styled.button`
   background: none;
   border: none;
   color: #555;
-  font-size: 16px;
+  font-size: 17px;
   font-family: "Home Video", "Courier New", Courier, monospace;
   cursor: pointer;
-  padding: 0;
-  margin-bottom: 10px;
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
+  padding: 0;  text-transform: uppercase;
+  align-self: flex-start;
 
   &:hover {
     color: #111;
@@ -656,36 +720,38 @@ const DetailName = styled.h2`
   font-size: 22px;
   font-weight: 400;
   color: #111;
-  margin: 10px 0 6px;
+  margin: 0;
   text-align: center;
 `;
 
 const DetailLine = styled.div`
-  font-size: 16px;
+  font-size: 17px;
   color: #666;
-  text-align: center;
-  line-height: 1.6;
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
+  text-align: center;  text-transform: uppercase;
 `;
 
 const GradeReceipt = styled.div`
   text-align: center;
-  padding: 14px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: ${GAP};
 `;
 
 const GradeReceiptLabel = styled.div`
   font-size: 16px;
-  color: ${GRAY};
-  letter-spacing: 0.5px;
-  margin-bottom: 6px;
+  color: ${GRAY};  margin: 0;
+`;
+
+const GradePending = styled.div`
+  font-size: 40px;
+  color: #111;
 `;
 
 const GradeBig = styled.div`
   font-size: 80px;
   color: ${(p) => GRADE_COLORS[p.grade] || "#111"};
-  line-height: 1;
-  margin: 10px auto 16px;
+  margin: 0 auto;
   width: 120px;
   height: 120px;
   border: 6px solid ${(p) => GRADE_COLORS[p.grade] || "#111"};
@@ -699,36 +765,83 @@ const GradeReceiptRow = styled.div`
   justify-content: space-between;
   align-items: baseline;
   font-size: 17px;
-  color: #555;
-  line-height: 2;
+  color: #111;
 `;
 
-const SectionTitle = styled.h3`
-  font-size: 16px;
+const STAR_GAP = 22;
+
+const SectionTitleRow = styled.h3`
+  font-size: 17px;
   font-weight: 400;
-  color: #555;
-  margin: 10px 0 6px;
-  letter-spacing: 0.5px;
+  color: ${GRAY};
+  margin: 0;
   text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 `;
+
+function SectionTitle({ children }) {
+  const ref = useRef(null);
+  const textRef = useRef(null);
+  const starRef = useRef(null);
+  const [starCount, setStarCount] = useState(0);
+
+  useEffect(() => {
+    const el = ref.current;
+    const textEl = textRef.current;
+    const starEl = starRef.current;
+    if (!el || !textEl || !starEl) return;
+    const measure = () => {
+      const totalWidth = el.offsetWidth;
+      if (totalWidth === 0) return;
+      const textWidth = textEl.offsetWidth;
+      const starWidth = starEl.offsetWidth;
+      const available = totalWidth - textWidth;
+      const n = Math.floor((available + STAR_GAP) / (starWidth + STAR_GAP));
+      setStarCount(Math.max(0, n - (n % 2)));
+    };
+    const observer = new ResizeObserver(measure);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  const leftCount = Math.ceil(starCount / 2);
+  const rightCount = Math.floor(starCount / 2);
+
+  return (
+    <SectionTitleRow ref={ref}>
+      <span ref={starRef} data-star style={starCount === 0 ? { position: 'absolute', visibility: 'hidden' } : undefined}>*</span>
+      {Array.from({ length: Math.max(0, leftCount - 1) }, (_, i) => <span key={`l${i}`} data-star>*</span>)}
+      <span ref={textRef}>{children}</span>
+      {Array.from({ length: rightCount }, (_, i) => <span key={`r${i}`} data-star>*</span>)}
+    </SectionTitleRow>
+  );
+}
 
 const InspectionBlock = styled.div`
-  margin: 10px 0;
+  display: flex;
+  flex-direction: column;
+  gap: ${GAP};
+`;
+
+const DateBadge = styled.span`
+  font-weight: 700;
+  color: #111;
 `;
 
 const InspectionHeader = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: baseline;
-  font-size: 16px;
+  font-size: 17px;
   color: #333;
-  margin-bottom: 8px;
 `;
 
 const InspectionMeta = styled.div`
   display: flex;
-  gap: 12px;
-  font-size: 16px;
+  gap: ${GAP};
+  font-size: 17px;
   color: #666;
 `;
 
@@ -739,52 +852,44 @@ const InspGrade = styled.span`
 const ViolationsList = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: ${GAP};
 `;
 
 const ViolationItem = styled.div`
-  font-size: 16px;
+  font-size: 17px;
   color: #444;
-  line-height: 1.5;
 `;
 
 const ViolationFlag = styled.span`
-  color: ${(p) => (p.critical ? "#111" : "#888")};
-  ${(p) => p.critical && "text-decoration: underline;"}
+  color: ${(p) => (p.critical ? "#DC2626" : "#111")};
 `;
 
 const ViolationText = styled.span`
   display: block;
-  padding-left: 14px;
   color: #555;
-  font-size: 15px;
-  line-height: 1.5;
+  font-size: 17px;
 `;
 
 const NoViolations = styled.div`
-  font-size: 16px;
+  font-size: 17px;
   color: ${GRAY};
-  letter-spacing: 0.5px;
 `;
 
 const Footer = styled.footer`
   text-align: center;
-  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: ${GAP};
 `;
 
 const FooterText = styled.div`
   font-size: 15px;
   color: ${GRAY};
-  letter-spacing: 0.5px;
-  line-height: 1.8;
 `;
 
 const Barcode = styled.div`
-  font-size: 24px;
-  letter-spacing: 0.5px;
-  color: #111;
+  font-size: 24px;  color: #111;
   margin-top: 14px;
-  line-height: 1;
 `;
 
 export default App;
