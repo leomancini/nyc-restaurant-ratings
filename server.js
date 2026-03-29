@@ -1,9 +1,16 @@
 import express from "express";
 import { fileURLToPath } from "url";
 import { dirname, join } from "path";
+import { createCanvas, registerFont } from "canvas";
+import { readFileSync } from "fs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
+
+registerFont(join(__dirname, "dist/fonts/HomeVideo-BLG6G.ttf"), { family: "Home Video" });
+registerFont(join(__dirname, "dist/fonts/HomeVideoBold-R90Dv.ttf"), { family: "Home Video", weight: "bold" });
+
+const GRADE_COLORS = { A: "#2563EB", B: "#16A34A", C: "#EA580C" };
 
 const app = express();
 const port = 3128;
@@ -203,9 +210,154 @@ function aggregateRestaurants(rows) {
   });
 }
 
-// SPA fallback
-app.get("*", (req, res) => {
-  res.sendFile(join(__dirname, "dist", "index.html"));
+// OG image generation
+app.get("/api/og/:camis", async (req, res) => {
+  try {
+    const { camis } = req.params;
+    const params = new URLSearchParams({
+      $where: `camis='${camis}'`,
+      $order: "inspection_date DESC",
+      $limit: "10",
+    });
+    if (APP_TOKEN) params.set("$$app_token", APP_TOKEN);
+    const response = await fetch(`${NYC_OPEN_DATA_URL}?${params}`);
+    const data = await response.json();
+    if (!data.length) return res.status(404).send("Not found");
+
+    const first = data[0];
+    const name = first.dba || "";
+    const address = `${first.building || ""} ${first.street || ""}`.trim();
+    const boro = (first.boro || "").toUpperCase();
+    const grade = data.find((r) => r.grade)?.grade || null;
+    const score = first.score != null ? Number(first.score) : null;
+
+    const W = 1200, H = 630;
+    const canvas = createCanvas(W, H);
+    const ctx = canvas.getContext("2d");
+
+    // Background
+    ctx.fillStyle = "#fff";
+    ctx.fillRect(0, 0, W, H);
+
+    // Title
+    ctx.fillStyle = "#aaa";
+    ctx.font = '24px "Home Video"';
+    ctx.textAlign = "center";
+    ctx.fillText("NYC RESTAURANT RATINGS", W / 2, 80);
+
+    // Restaurant name
+    ctx.fillStyle = "#111";
+    ctx.font = '42px "Home Video"';
+    ctx.textAlign = "center";
+    const titleCase = name.toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase());
+    // Truncate if too long
+    let displayName = titleCase;
+    while (ctx.measureText(displayName).width > W - 160 && displayName.length > 0) {
+      displayName = displayName.slice(0, -1);
+    }
+    if (displayName !== titleCase) displayName += "...";
+    ctx.fillText(displayName, W / 2, 200);
+
+    // Address
+    ctx.fillStyle = "#aaa";
+    ctx.font = '24px "Home Video"';
+    ctx.fillText(`${address} * ${boro}`, W / 2, 260);
+
+    // Grade box
+    if (grade && GRADE_COLORS[grade]) {
+      const color = GRADE_COLORS[grade];
+      const boxSize = 160;
+      const boxX = W / 2 - boxSize / 2;
+      const boxY = 320;
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 8;
+      ctx.strokeRect(boxX, boxY, boxSize, boxSize);
+      ctx.fillStyle = color;
+      ctx.font = 'bold 100px "Home Video"';
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(grade, W / 2, boxY + boxSize / 2);
+      ctx.textBaseline = "alphabetic";
+    } else if (grade === "Z" || grade === "N") {
+      const boxSize = 160;
+      const boxX = W / 2 - boxSize / 2;
+      const boxY = 320;
+      ctx.strokeStyle = "#111";
+      ctx.lineWidth = 8;
+      ctx.strokeRect(boxX, boxY, boxSize, boxSize);
+      ctx.fillStyle = "#111";
+      ctx.font = 'bold 100px "Home Video"';
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText("?", W / 2, boxY + boxSize / 2);
+      ctx.textBaseline = "alphabetic";
+    }
+
+    // Score
+    if (score != null) {
+      ctx.fillStyle = "#aaa";
+      ctx.font = '24px "Home Video"';
+      ctx.textAlign = "center";
+      ctx.fillText(`${score} POINTS`, W / 2, 550);
+    }
+
+    res.setHeader("Content-Type", "image/png");
+    res.setHeader("Cache-Control", "public, max-age=86400");
+    res.send(canvas.toBuffer("image/png"));
+  } catch (error) {
+    console.error("OG image error:", error);
+    res.status(500).send("Error generating image");
+  }
+});
+
+// SPA fallback with OG meta injection
+const indexHtml = readFileSync(join(__dirname, "dist", "index.html"), "utf-8");
+
+app.get("*", async (req, res) => {
+  const match = req.path.match(/^\/restaurant\/(\d+)/);
+  if (!match) return res.send(indexHtml);
+
+  const camis = match[1];
+  try {
+    const params = new URLSearchParams({
+      $where: `camis='${camis}'`,
+      $order: "inspection_date DESC",
+      $limit: "5",
+    });
+    if (APP_TOKEN) params.set("$$app_token", APP_TOKEN);
+    const response = await fetch(`${NYC_OPEN_DATA_URL}?${params}`);
+    const data = await response.json();
+
+    if (!data.length) return res.send(indexHtml);
+
+    const first = data[0];
+    const name = first.dba || "Restaurant";
+    const titleCase = name.toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase());
+    const address = `${first.building || ""} ${first.street || ""}`.trim();
+    const boro = (first.boro || "").toUpperCase();
+    const grade = data.find((r) => r.grade)?.grade || "";
+    const gradeText = grade && ["A", "B", "C"].includes(grade) ? ` — Grade ${grade}` : "";
+
+    const ogUrl = `${req.protocol}://${req.get("host")}${req.path}`;
+    const ogImage = `${req.protocol}://${req.get("host")}/api/og/${camis}`;
+    const description = `${address} * ${boro}${gradeText}`;
+
+    const ogTags = `
+    <meta property="og:title" content="${titleCase} — NYC Restaurant Ratings" />
+    <meta property="og:description" content="${description}" />
+    <meta property="og:image" content="${ogImage}" />
+    <meta property="og:url" content="${ogUrl}" />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="${titleCase} — NYC Restaurant Ratings" />
+    <meta name="twitter:description" content="${description}" />
+    <meta name="twitter:image" content="${ogImage}" />`;
+
+    const html = indexHtml.replace("</head>", `${ogTags}\n</head>`);
+    res.send(html);
+  } catch {
+    res.send(indexHtml);
+  }
 });
 
 app.listen(port, () => {
