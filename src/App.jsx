@@ -333,9 +333,9 @@ function App() {
                     {insp.violations.map((v, j) => (
                       <ViolationItem key={j}>
                         <ViolationFlag critical={v.critical}>
-                          {v.critical ? "! CRITICAL !" : "GENERAL"}
+                          {v.critical ? "CRITICAL" : "GENERAL"}
                         </ViolationFlag>
-                        <ViolationText>{v.description}</ViolationText>
+                        <ViolationText critical={v.critical}>{v.description.replace(/º/g, "°")}</ViolationText>
                       </ViolationItem>
                     ))}
                   </ViolationsList>
@@ -840,7 +840,7 @@ const InspectionMeta = styled.div`
   display: flex;
   gap: ${GAP};
   font-size: 17px;
-  color: #666;
+  color: ${GRAY};
 `;
 
 const InspGrade = styled.span`
@@ -856,15 +856,19 @@ const ViolationsList = styled.div`
 const ViolationItem = styled.div`
   font-size: 17px;
   color: #444;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
 `;
 
 const ViolationFlag = styled.span`
-  color: ${(p) => (p.critical ? "#DC2626" : "#111")};
+  color: ${(p) => (p.critical ? "#DC2626" : GRAY)};
 `;
 
 const ViolationText = styled.span`
   display: block;
-  color: #555;
+  color: ${(p) => (p.critical ? "#DC2626" : "#555")};
+  font-weight: ${(p) => (p.critical ? 700 : 400)};
   font-size: 17px;
 `;
 
