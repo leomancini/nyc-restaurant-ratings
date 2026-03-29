@@ -209,8 +209,10 @@ function App() {
               <EmptyState>
                 <Spacer />
                 <Spacer />
+                <Spacer />
                 <LegendSection>
                   <SectionTitle>GRADE SCALE</SectionTitle>
+                  <Spacer />
                   <Spacer />
                   <Spacer />
                   <GradeColumns>
@@ -234,6 +236,7 @@ function App() {
                   <SectionTitle>INFO</SectionTitle>
                   <Spacer />
                   <Spacer />
+                  <FooterText>DATA FROM</FooterText>
                   <FooterText>DEPT OF HEALTH & MENTAL HYGIENE</FooterText>
                   <FooterText>VIA NYC OPEN DATA</FooterText>
                   <FooterText>{new Date().toLocaleDateString("en-US", { year: "numeric", month: "2-digit", day: "2-digit" })} {new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })}</FooterText>
@@ -880,7 +883,7 @@ const Footer = styled.footer`
 `;
 
 const FooterText = styled.div`
-  font-size: 15px;
+  font-size: 17px;
   color: ${GRAY};
 `;
 
