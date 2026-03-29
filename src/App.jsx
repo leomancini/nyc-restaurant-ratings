@@ -253,6 +253,7 @@ function App() {
             {selected && <Detail style={detailLoading ? {visibility: "hidden", height: 0, overflow: "hidden"} : undefined}>
 
             <Spacer />
+            <Spacer />
             {selected.grade && GRADE_COLORS[selected.grade] && (
               <GradeReceipt>
                 <GradeBig grade={selected.grade}>{GRADE_LABELS[selected.grade] || selected.grade}</GradeBig>
@@ -316,10 +317,10 @@ function App() {
             <Spacer />
             <Spacer />
             <SectionTitle>INSPECTION HISTORY</SectionTitle>
-            <Spacer />
 
             {selected.inspections.map((insp, i) => (
               <InspectionBlock key={i}>
+                <Spacer />
                 <Spacer />
                 <InspectionHeader>
                   <DateBadge>{formatDateShort(insp.date)}</DateBadge>
@@ -328,15 +329,16 @@ function App() {
                     {insp.score != null && <span>{insp.score} POINTS</span>}
                   </InspectionMeta>
                 </InspectionHeader>
+                <Spacer />
                 {insp.violations.length > 0 ? (
                   <ViolationsList>
-                    {insp.violations.map((v, j) => (
-                      <ViolationItem key={j}>
-                        <ViolationFlag critical={v.critical}>
-                          {v.critical ? "CRITICAL" : "GENERAL"}
-                        </ViolationFlag>
-                        <ViolationText critical={v.critical}>{v.description.replace(/º/g, "°")}</ViolationText>
-                      </ViolationItem>
+                    {[...insp.violations].sort((a, b) => b.critical - a.critical).map((v, j) => (
+                      <React.Fragment key={j}>
+                        {j > 0 && <Spacer />}
+                        <ViolationItem>
+                          <ViolationText critical={v.critical}>{v.description.replace(/º/g, "°")}</ViolationText>
+                        </ViolationItem>
+                      </React.Fragment>
                     ))}
                   </ViolationsList>
                 ) : (
@@ -410,9 +412,8 @@ function formatDateShort(dateStr) {
   const d = new Date(dateStr + "T00:00:00");
   return d.toLocaleDateString("en-US", {
     year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  });
+    month: "long",
+  }).toUpperCase();
 }
 
 function formatPhone(phone) {
@@ -863,12 +864,12 @@ const ViolationItem = styled.div`
 
 const ViolationFlag = styled.span`
   color: ${(p) => (p.critical ? "#DC2626" : GRAY)};
+  margin-bottom: ${(p) => (p.critical ? 0 : "4px")};
 `;
 
 const ViolationText = styled.span`
   display: block;
-  color: ${(p) => (p.critical ? "#DC2626" : "#555")};
-  font-weight: ${(p) => (p.critical ? 700 : 400)};
+  color: ${(p) => (p.critical ? "#DC2626" : "#111")};
   font-size: 17px;
 `;
 
