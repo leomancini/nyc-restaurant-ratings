@@ -150,6 +150,7 @@ function App() {
             </ReceiptHeader>
 
             <Spacer />
+            <Spacer />
             <SearchWrap>
               <SearchBox
                 type="text"
