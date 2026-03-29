@@ -145,7 +145,6 @@ function App() {
         {!selected && !detailLoading && (
           <>
             <Spacer />
-            <Spacer />
             <ReceiptHeader>
               <StoreName>NYC RESTAURANT RATINGS</StoreName>
               <Spacer />
