@@ -579,8 +579,8 @@ const ItemName = styled.div`
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  padding-top: 4px;
-  padding-bottom: 2px;
+  padding-top: 6px;
+  padding-bottom: 0;
 `;
 
 const ItemMeta = styled.div`
@@ -787,6 +787,8 @@ const SectionTitleRow = styled.h3`
   display: flex;
   align-items: center;
   justify-content: space-between;
+  padding-top: 2px;
+  padding-bottom: 0;
 `;
 
 function SectionTitle({ children }) {
