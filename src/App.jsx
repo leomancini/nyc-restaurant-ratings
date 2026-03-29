@@ -252,11 +252,11 @@ function App() {
 
         {(selected || detailLoading) && (
           <Detail>
+            <Spacer />
             {!detailLoading && <BackButton onClick={goBack}>&lt; BACK</BackButton>}
             {detailLoading && <BackButton style={{cursor: "default", color: GRAY}}>LOADING{dots(3)}</BackButton>}
             {selected && <Detail style={detailLoading ? {visibility: "hidden", height: 0, overflow: "hidden"} : undefined}>
 
-            <Spacer />
             <Spacer />
             {selected.grade && GRADE_COLORS[selected.grade] && (
               <GradeReceipt>
