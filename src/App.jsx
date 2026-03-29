@@ -233,7 +233,6 @@ function App() {
                 </LegendSection>
                 <Spacer />
                 <Spacer />
-                <Spacer />
                 <Footer>
                   <SectionTitle>INFO</SectionTitle>
                   <Spacer />
@@ -909,6 +908,7 @@ const Footer = styled.footer`
   display: flex;
   flex-direction: column;
   gap: ${GAP};
+  padding-top: 2px;
 `;
 
 const FooterText = styled.div`
