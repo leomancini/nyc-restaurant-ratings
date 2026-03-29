@@ -338,7 +338,7 @@ function App() {
                       <React.Fragment key={j}>
                         {j > 0 && <Spacer />}
                         <ViolationItem>
-                          <ViolationText critical={v.critical}>{v.critical && <><b>!</b> </>}{v.description.replace(/º/g, "°")}</ViolationText>
+                          <ViolationText critical={v.critical}>{v.critical && <><b>&nbsp;!&nbsp;</b>&nbsp;</>}{v.description.replace(/º/g, "°")}</ViolationText>
                         </ViolationItem>
                       </React.Fragment>
                     ))}
