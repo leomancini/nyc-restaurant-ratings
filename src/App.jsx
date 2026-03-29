@@ -906,6 +906,10 @@ const ViolationText = styled.span`
   color: ${(p) => (p.critical ? "#DC2626" : "#111")};
   font-size: 18px;
 
+  b {
+    -webkit-font-smoothing: none;
+  }
+
   ${(p) => p.critical && `
     &::selection {
       background: #DC2626;
