@@ -571,7 +571,8 @@ const ItemName = styled.div`
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  padding: 4px 0;
+  padding-top: 4px;
+  padding-bottom: 2px;
 `;
 
 const ItemMeta = styled.div`
