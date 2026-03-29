@@ -206,10 +206,7 @@ function App() {
             )}
 
             {!results && !loading && (
-              <EmptyState>
-                <Spacer />
-                <Spacer />
-                <Spacer />
+              <EmptyState style={{paddingTop: "16px"}}>
                 <LegendSection>
                   <SectionTitle>GRADE SCALE</SectionTitle>
                   <Spacer />
@@ -465,7 +462,7 @@ const HeaderDetail = styled.div`
 const Divider = styled.div`
   text-align: center;
   color: ${GRAY};
-  font-size: 14px;
+  font-size: 16px;
   margin: 0;  overflow: hidden;
   white-space: nowrap;
 `;
@@ -581,12 +578,12 @@ const ItemMeta = styled.div`
 `;
 
 const ScoreXs = styled.div`
-  font-size: 15px;
+  font-size: 16px;
   color: ${GRAY};
 `;
 
 const ItemAddress = styled.div`
-  font-size: 15px;
+  font-size: 16px;
   color: ${GRAY};
   text-transform: uppercase;  white-space: nowrap;
   overflow: hidden;
@@ -612,7 +609,7 @@ const GradeBox = styled.div`
 `;
 
 const ScoreText = styled.div`
-  font-size: 15px;
+  font-size: 16px;
   color: ${GRAY};
 `;
 
@@ -646,7 +643,7 @@ const GradeColumn = styled.div`
 `;
 
 const GradeRange = styled.div`
-  font-size: 15px;
+  font-size: 16px;
   color: ${GRAY};
 `;
 
@@ -658,7 +655,7 @@ const LegendSection = styled.div`
 `;
 
 const LegendTitle = styled.div`
-  font-size: 17px;
+  font-size: 18px;
   color: #555;
   margin: 0;  text-align: center;
 `;
@@ -705,7 +702,7 @@ const BackButton = styled.button`
   background: none;
   border: none;
   color: #555;
-  font-size: 17px;
+  font-size: 18px;
   font-family: "Home Video", "Courier New", Courier, monospace;
   cursor: pointer;
   padding: 0;  text-transform: uppercase;
@@ -725,7 +722,7 @@ const DetailName = styled.h2`
 `;
 
 const DetailLine = styled.div`
-  font-size: 17px;
+  font-size: 18px;
   color: #666;
   text-align: center;  text-transform: uppercase;
 `;
@@ -764,14 +761,14 @@ const GradeReceiptRow = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: baseline;
-  font-size: 17px;
+  font-size: 18px;
   color: #111;
 `;
 
 const STAR_GAP = 22;
 
 const SectionTitleRow = styled.h3`
-  font-size: 17px;
+  font-size: 18px;
   font-weight: 400;
   color: ${GRAY};
   margin: 0;
@@ -834,14 +831,14 @@ const InspectionHeader = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: baseline;
-  font-size: 17px;
+  font-size: 18px;
   color: #333;
 `;
 
 const InspectionMeta = styled.div`
   display: flex;
   gap: ${GAP};
-  font-size: 17px;
+  font-size: 18px;
   color: ${GRAY};
 `;
 
@@ -856,7 +853,7 @@ const ViolationsList = styled.div`
 `;
 
 const ViolationItem = styled.div`
-  font-size: 17px;
+  font-size: 18px;
   color: #444;
   display: flex;
   flex-direction: column;
@@ -871,11 +868,11 @@ const ViolationFlag = styled.span`
 const ViolationText = styled.span`
   display: block;
   color: ${(p) => (p.critical ? "#DC2626" : "#111")};
-  font-size: 17px;
+  font-size: 18px;
 `;
 
 const NoViolations = styled.div`
-  font-size: 17px;
+  font-size: 18px;
   color: ${GRAY};
 `;
 
@@ -887,7 +884,7 @@ const Footer = styled.footer`
 `;
 
 const FooterText = styled.div`
-  font-size: 17px;
+  font-size: 18px;
   color: ${GRAY};
 `;
 
