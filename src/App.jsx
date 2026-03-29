@@ -176,10 +176,10 @@ function App() {
               <>
                 <ResultsList>
                 {loading && (
-                  <ResultItem><ResultRow as="div" style={{cursor: "default"}}><ResultLeft><ResultDetails><ItemName style={{color: GRAY}}>SEARCHING{dots(3)}</ItemName><ItemAddress>&nbsp;</ItemAddress><ScoreXs>&nbsp;</ScoreXs></ResultDetails></ResultLeft><ResultRight><GradeBox style={{visibility: "hidden"}}>{" "}</GradeBox></ResultRight></ResultRow></ResultItem>
+                  <ResultItem><ResultRow as="div" style={{cursor: "default", pointerEvents: "none"}}><ResultLeft><ResultDetails><ItemName style={{color: GRAY}}>SEARCHING{dots(3)}</ItemName><ItemAddress>&nbsp;</ItemAddress><ScoreXs>&nbsp;</ScoreXs></ResultDetails></ResultLeft><ResultRight><GradeBox style={{visibility: "hidden"}}>{" "}</GradeBox></ResultRight></ResultRow></ResultItem>
                 )}
                 {results && !loading && results.length === 0 && (
-                  <ResultItem><ResultRow as="div" style={{cursor: "default"}}><ResultLeft><ResultDetails><ItemName style={{color: GRAY}}>NO RESULTS FOUND</ItemName><ItemAddress>&nbsp;</ItemAddress><ScoreXs>&nbsp;</ScoreXs></ResultDetails></ResultLeft><ResultRight><GradeBox style={{visibility: "hidden"}}>{" "}</GradeBox></ResultRight></ResultRow></ResultItem>
+                  <ResultItem><ResultRow as="div" style={{cursor: "default", pointerEvents: "none"}}><ResultLeft><ResultDetails><ItemName style={{color: GRAY}}>NO RESULTS FOUND</ItemName><ItemAddress>&nbsp;</ItemAddress><ScoreXs>&nbsp;</ScoreXs></ResultDetails></ResultLeft><ResultRight><GradeBox style={{visibility: "hidden"}}>{" "}</GradeBox></ResultRight></ResultRow></ResultItem>
                 )}
                 {results && !loading && results.map((r, i) => (
                   <ResultItem key={r.camis}>
@@ -496,7 +496,7 @@ const ClearButton = styled.button`
   background: none;
   border: none;
   color: #666;
-  font-size: 16px;
+  font-size: 18px;
   font-family: "Home Video", "Courier New", Courier, monospace;
   cursor: pointer;
   padding: 4px;
