@@ -239,66 +239,27 @@ app.get("/api/og/:camis", async (req, res) => {
     ctx.fillStyle = "#fff";
     ctx.fillRect(0, 0, W, H);
 
-    // Title
-    ctx.fillStyle = "#aaa";
-    ctx.font = '24px "Home Video"';
-    ctx.textAlign = "center";
-    ctx.fillText("NYC RESTAURANT RATINGS", W / 2, 80);
-
     // Restaurant name
     ctx.fillStyle = "#111";
     ctx.font = '42px "Home Video"';
     ctx.textAlign = "center";
     const titleCase = name.toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase());
-    // Truncate if too long
     let displayName = titleCase;
     while (ctx.measureText(displayName).width > W - 160 && displayName.length > 0) {
       displayName = displayName.slice(0, -1);
     }
     if (displayName !== titleCase) displayName += "...";
-    ctx.fillText(displayName, W / 2, 200);
+    ctx.fillText(displayName, W / 2, H / 2 - 30);
 
-    // Address
-    ctx.fillStyle = "#aaa";
-    ctx.font = '24px "Home Video"';
-    ctx.fillText(`${address} * ${boro}`, W / 2, 260);
-
-    // Grade box
+    // Grade
     if (grade && GRADE_COLORS[grade]) {
-      const color = GRADE_COLORS[grade];
-      const boxSize = 160;
-      const boxX = W / 2 - boxSize / 2;
-      const boxY = 320;
-      ctx.strokeStyle = color;
-      ctx.lineWidth = 8;
-      ctx.strokeRect(boxX, boxY, boxSize, boxSize);
-      ctx.fillStyle = color;
-      ctx.font = 'bold 100px "Home Video"';
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
-      ctx.fillText(grade, W / 2, boxY + boxSize / 2);
-      ctx.textBaseline = "alphabetic";
+      ctx.fillStyle = GRADE_COLORS[grade];
+      ctx.font = '42px "Home Video"';
+      ctx.fillText(grade, W / 2, H / 2 + 40);
     } else if (grade === "Z" || grade === "N") {
-      const boxSize = 160;
-      const boxX = W / 2 - boxSize / 2;
-      const boxY = 320;
-      ctx.strokeStyle = "#111";
-      ctx.lineWidth = 8;
-      ctx.strokeRect(boxX, boxY, boxSize, boxSize);
       ctx.fillStyle = "#111";
-      ctx.font = 'bold 100px "Home Video"';
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
-      ctx.fillText("?", W / 2, boxY + boxSize / 2);
-      ctx.textBaseline = "alphabetic";
-    }
-
-    // Score
-    if (score != null) {
-      ctx.fillStyle = "#aaa";
-      ctx.font = '24px "Home Video"';
-      ctx.textAlign = "center";
-      ctx.fillText(`${score} POINTS`, W / 2, 550);
+      ctx.font = '42px "Home Video"';
+      ctx.fillText("?", W / 2, H / 2 + 40);
     }
 
     res.setHeader("Content-Type", "image/png");
