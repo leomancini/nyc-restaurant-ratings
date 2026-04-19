@@ -3,6 +3,9 @@ import { fileURLToPath } from "url";
 import { dirname, join } from "path";
 import { createCanvas, registerFont } from "canvas";
 import { readFileSync, mkdirSync, writeFileSync } from "fs";
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
+import { z } from "zod";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -22,49 +25,110 @@ const APP_TOKEN = process.env.NYC_OPEN_DATA_TOKEN || "";
 app.use(express.json());
 app.use(express.static(join(__dirname, "dist"), { index: false }));
 
+async function searchRestaurants(q) {
+  if (!q || q.trim().length < 2) return [];
+
+  const raw = q.trim().toUpperCase().replace(/'/g, "''");
+  const words = raw.split(/\s+/).filter((w) => w.length > 0);
+  const joined = words.join("");
+
+  const wordClauses = words.map(
+    (w) =>
+      `(upper(dba) like '%${w}%' OR upper(street) like '%${w}%' OR upper(boro) like '%${w}%' OR zipcode like '%${w}%')`
+  );
+  const fuzzyClause =
+    words.length > 1 ? ` OR upper(dba) like '%${joined}%'` : "";
+  const where = `(${wordClauses.join(" AND ")}${fuzzyClause})`;
+
+  const params = new URLSearchParams({
+    $where: where,
+    $order: "inspection_date DESC",
+    $limit: "1000",
+  });
+  if (APP_TOKEN) params.set("$$app_token", APP_TOKEN);
+
+  const response = await fetch(`${NYC_OPEN_DATA_URL}?${params}`);
+  if (!response.ok) {
+    throw new Error(`NYC Open Data API error: ${response.status}`);
+  }
+  const data = await response.json();
+  return aggregateRestaurants(data);
+}
+
+async function getRestaurantDetails(camis) {
+  const params = new URLSearchParams({
+    $where: `camis='${camis}'`,
+    $order: "inspection_date DESC",
+    $limit: "200",
+  });
+  if (APP_TOKEN) params.set("$$app_token", APP_TOKEN);
+
+  const response = await fetch(`${NYC_OPEN_DATA_URL}?${params}`);
+  if (!response.ok) {
+    throw new Error(`NYC Open Data API error: ${response.status}`);
+  }
+
+  const data = await response.json();
+  if (data.length === 0) return null;
+
+  const first = data[0];
+
+  const inspectionMap = new Map();
+  for (const row of data) {
+    const date = row.inspection_date?.split("T")[0];
+    if (!date) continue;
+    if (!inspectionMap.has(date)) {
+      inspectionMap.set(date, {
+        date,
+        score: row.score != null ? Number(row.score) : null,
+        grade: row.grade || null,
+        gradeDate: row.grade_date?.split("T")[0] || null,
+        type: row.inspection_type || null,
+        violations: [],
+      });
+    }
+    const insp = inspectionMap.get(date);
+    if (row.grade && !insp.grade) {
+      insp.grade = row.grade;
+      insp.gradeDate = row.grade_date?.split("T")[0] || null;
+    }
+    if (row.score != null && insp.score == null) {
+      insp.score = Number(row.score);
+    }
+    if (row.violation_description) {
+      insp.violations.push({
+        code: row.violation_code,
+        description: row.violation_description,
+        critical: row.critical_flag === "Critical",
+      });
+    }
+  }
+
+  const inspections = Array.from(inspectionMap.values()).sort(
+    (a, b) => new Date(b.date) - new Date(a.date)
+  );
+  const latestGraded = inspections.find((i) => i.grade);
+
+  return {
+    camis: first.camis,
+    name: first.dba,
+    boro: first.boro,
+    building: first.building,
+    street: first.street,
+    zipcode: first.zipcode,
+    phone: first.phone,
+    cuisine: first.cuisine_description,
+    grade: latestGraded?.grade || null,
+    score: latestGraded?.score ?? null,
+    gradeDate: latestGraded?.gradeDate || null,
+    inspections,
+  };
+}
+
 // Search restaurants by name and/or address
 app.get("/api/search", async (req, res) => {
   try {
-    const { q } = req.query;
-    if (!q || q.trim().length < 2) {
-      return res.json({ restaurants: [] });
-    }
-
-    const raw = q.trim().toUpperCase().replace(/'/g, "''");
-    const words = raw.split(/\s+/).filter((w) => w.length > 0);
-    const joined = words.join("");
-
-    // Each word must appear in name OR address fields
-    const wordClauses = words.map(
-      (w) =>
-        `(upper(dba) like '%${w}%' OR upper(street) like '%${w}%' OR upper(boro) like '%${w}%' OR zipcode like '%${w}%')`
-    );
-
-    // Also match the no-spaces version against the name (sweet green -> sweetgreen)
-    const fuzzyClause =
-      words.length > 1 ? ` OR upper(dba) like '%${joined}%'` : "";
-
-    const where = `(${wordClauses.join(" AND ")}${fuzzyClause})`;
-
-    const params = new URLSearchParams({
-      $where: where,
-      $order: "inspection_date DESC",
-      $limit: "1000",
-    });
-
-    if (APP_TOKEN) {
-      params.set("$$app_token", APP_TOKEN);
-    }
-
-    const response = await fetch(`${NYC_OPEN_DATA_URL}?${params}`);
-
-    if (!response.ok) {
-      throw new Error(`NYC Open Data API error: ${response.status}`);
-    }
-
-    const data = await response.json();
-    const restaurants = aggregateRestaurants(data);
-
+    const restaurants = await searchRestaurants(req.query.q);
     res.json({ restaurants });
   } catch (error) {
     console.error("Search error:", error);
@@ -75,89 +139,93 @@ app.get("/api/search", async (req, res) => {
 // Get details for a specific restaurant by CAMIS ID
 app.get("/api/restaurant/:camis", async (req, res) => {
   try {
-    const { camis } = req.params;
-
-    const params = new URLSearchParams({
-      $where: `camis='${camis}'`,
-      $order: "inspection_date DESC",
-      $limit: "200",
-    });
-
-    if (APP_TOKEN) {
-      params.set("$$app_token", APP_TOKEN);
-    }
-
-    const response = await fetch(`${NYC_OPEN_DATA_URL}?${params}`);
-
-    if (!response.ok) {
-      throw new Error(`NYC Open Data API error: ${response.status}`);
-    }
-
-    const data = await response.json();
-
-    if (data.length === 0) {
-      return res.status(404).json({ error: "Restaurant not found" });
-    }
-
-    const first = data[0];
-
-    // Group inspections by date
-    const inspectionMap = new Map();
-    for (const row of data) {
-      const date = row.inspection_date?.split("T")[0];
-      if (!date) continue;
-      if (!inspectionMap.has(date)) {
-        inspectionMap.set(date, {
-          date,
-          score: row.score != null ? Number(row.score) : null,
-          grade: row.grade || null,
-          gradeDate: row.grade_date?.split("T")[0] || null,
-          type: row.inspection_type || null,
-          violations: [],
-        });
-      }
-      const insp = inspectionMap.get(date);
-      if (row.grade && !insp.grade) {
-        insp.grade = row.grade;
-        insp.gradeDate = row.grade_date?.split("T")[0] || null;
-      }
-      if (row.score != null && insp.score == null) {
-        insp.score = Number(row.score);
-      }
-      if (row.violation_description) {
-        insp.violations.push({
-          code: row.violation_code,
-          description: row.violation_description,
-          critical: row.critical_flag === "Critical",
-        });
-      }
-    }
-
-    const inspections = Array.from(inspectionMap.values()).sort(
-      (a, b) => new Date(b.date) - new Date(a.date)
-    );
-
-    // Find latest grade
-    const latestGraded = inspections.find((i) => i.grade);
-
-    res.json({
-      camis: first.camis,
-      name: first.dba,
-      boro: first.boro,
-      building: first.building,
-      street: first.street,
-      zipcode: first.zipcode,
-      phone: first.phone,
-      cuisine: first.cuisine_description,
-      grade: latestGraded?.grade || null,
-      score: latestGraded?.score ?? null,
-      gradeDate: latestGraded?.gradeDate || null,
-      inspections,
-    });
+    const details = await getRestaurantDetails(req.params.camis);
+    if (!details) return res.status(404).json({ error: "Restaurant not found" });
+    res.json(details);
   } catch (error) {
     console.error("Detail error:", error);
     res.status(500).json({ error: "Failed to fetch restaurant details" });
   }
+});
+
+// MCP server: exposes restaurant lookup tools to Claude
+function createMcpServer() {
+  const server = new McpServer({
+    name: "nyc-restaurant-ratings",
+    version: "1.0.0",
+  });
+
+  server.tool(
+    "search_restaurants",
+    "Search NYC restaurants by name, street, borough, or zipcode. Returns up to 20 matches with their CAMIS ID, address, cuisine, and most recent DOHMH letter grade (A/B/C).",
+    { query: z.string().min(2).describe("Search terms — e.g. 'sweetgreen brooklyn', 'joe's pizza', '10013'") },
+    async ({ query }) => {
+      const restaurants = await searchRestaurants(query);
+      const trimmed = restaurants.slice(0, 20);
+      return {
+        content: [{
+          type: "text",
+          text: JSON.stringify({
+            count: trimmed.length,
+            total: restaurants.length,
+            restaurants: trimmed,
+          }, null, 2),
+        }],
+      };
+    }
+  );
+
+  server.tool(
+    "get_restaurant",
+    "Get full inspection history for a NYC restaurant by CAMIS ID (obtained from search_restaurants). Includes every inspection date, score, grade, and individual violations.",
+    { camis: z.string().describe("CAMIS ID from search_restaurants results") },
+    async ({ camis }) => {
+      const details = await getRestaurantDetails(camis);
+      if (!details) {
+        return {
+          content: [{ type: "text", text: `No restaurant found with CAMIS ${camis}` }],
+          isError: true,
+        };
+      }
+      return {
+        content: [{ type: "text", text: JSON.stringify(details, null, 2) }],
+      };
+    }
+  );
+
+  return server;
+}
+
+app.post("/mcp", async (req, res) => {
+  try {
+    const server = createMcpServer();
+    const transport = new StreamableHTTPServerTransport({
+      sessionIdGenerator: undefined,
+    });
+    res.on("close", () => {
+      transport.close();
+      server.close();
+    });
+    await server.connect(transport);
+    await transport.handleRequest(req, res, req.body);
+  } catch (error) {
+    console.error("MCP error:", error);
+    if (!res.headersSent) {
+      res.status(500).json({
+        jsonrpc: "2.0",
+        error: { code: -32603, message: "Internal server error" },
+        id: null,
+      });
+    }
+  }
+});
+
+app.get("/mcp", (req, res) => {
+  res.status(405).json({
+    jsonrpc: "2.0",
+    error: { code: -32000, message: "Method not allowed." },
+    id: null,
+  });
 });
 
 function aggregateRestaurants(rows) {
