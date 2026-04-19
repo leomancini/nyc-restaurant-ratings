@@ -2,7 +2,7 @@ import express from "express";
 import { fileURLToPath } from "url";
 import { dirname, join } from "path";
 import { createCanvas, registerFont } from "canvas";
-import { readFileSync, mkdirSync, writeFileSync } from "fs";
+import { readFileSync, mkdirSync, writeFileSync, existsSync } from "fs";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { z } from "zod";
@@ -344,7 +344,40 @@ function generateOgImages() {
   writeFileSync(join(ogDir, "home.png"), canvas.toBuffer("image/png"));
 }
 
+// Apple touch icon: 180x180 with "ABC" in grade colors
+function generateAppleTouchIcon() {
+  const outPath = join(__dirname, "dist/apple-touch-icon.png");
+  if (existsSync(outPath)) return;
+
+  const S = 180;
+  const canvas = createCanvas(S, S);
+  const ctx = canvas.getContext("2d");
+
+  ctx.fillStyle = "#fff";
+  ctx.fillRect(0, 0, S, S);
+
+  const letters = [
+    { letter: "A", color: GRADE_COLORS.A },
+    { letter: "B", color: GRADE_COLORS.B },
+    { letter: "C", color: GRADE_COLORS.C },
+  ];
+
+  ctx.font = '65px "Home Video"';
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+
+  const padding = 22;
+  const inner = S - padding * 2;
+  for (let i = 0; i < 3; i++) {
+    ctx.fillStyle = letters[i].color;
+    ctx.fillText(letters[i].letter, padding + inner * (i * 2 + 1) / 6, S / 2);
+  }
+
+  writeFileSync(outPath, canvas.toBuffer("image/png"));
+}
+
 generateOgImages();
+generateAppleTouchIcon();
 
 // SPA fallback with OG meta injection
 const indexHtml = readFileSync(join(__dirname, "dist", "index.html"), "utf-8");
