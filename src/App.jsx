@@ -245,6 +245,13 @@ function App() {
                   <FooterText>VIA NYC OPEN DATA</FooterText>
                   <FooterText>{now.toLocaleDateString("en-US", { year: "numeric", month: "2-digit", day: "2-digit" })} {now.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })}</FooterText>
                   <FooterText>THANK YOU FOR DINING SAFELY</FooterText>
+                  <FooterLink
+                    href="https://claude.ai/customize/connectors?modal=add-custom-connector&connectorName=NYC%20Restaurant%20Ratings&connectorUrl=https%3A%2F%2Fnycfood.leo.gd%2Fmcp"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    CONNECT TO CLAUDE
+                  </FooterLink>
                 </Footer>
                 <Spacer />
                 <Spacer />
@@ -934,6 +941,20 @@ const Footer = styled.footer`
 const FooterText = styled.div`
   font-size: 18px;
   color: ${GRAY};
+`;
+
+const FooterLink = styled.a`
+  font-size: 18px;
+  color: #777;
+  text-decoration: underline;
+
+  &:hover {
+    color: #111;
+  }
+
+  &:active {
+    color: #000;
+  }
 `;
 
 const Barcode = styled.div`
