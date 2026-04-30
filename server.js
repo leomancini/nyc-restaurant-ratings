@@ -397,23 +397,14 @@ app.get("*", async (req, res) => {
 
   const camis = match[1];
   try {
-    const params = new URLSearchParams({
-      $where: `camis='${camis}'`,
-      $order: "inspection_date DESC",
-      $limit: "5",
-    });
-    if (APP_TOKEN) params.set("$$app_token", APP_TOKEN);
-    const response = await fetch(`${NYC_OPEN_DATA_URL}?${params}`);
-    const data = await response.json();
+    const details = await getRestaurantDetails(camis);
+    if (!details) return res.send(indexHtml);
 
-    if (!data.length) return res.send(indexHtml);
-
-    const first = data[0];
-    const name = first.dba || "Restaurant";
+    const name = details.name || "Restaurant";
     const titleCase = name.toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase());
-    const address = `${first.building || ""} ${first.street || ""}`.trim();
-    const boro = (first.boro || "").toUpperCase();
-    const grade = data.find((r) => r.grade)?.grade || "";
+    const address = `${details.building || ""} ${details.street || ""}`.trim();
+    const boro = (details.boro || "").toUpperCase();
+    const grade = details.grade || "";
     const gradeText = grade && ["A", "B", "C"].includes(grade) ? ` – Grade ${grade}` : "";
 
     const ogUrl = `${req.protocol}://${req.get("host")}${req.path}`;
